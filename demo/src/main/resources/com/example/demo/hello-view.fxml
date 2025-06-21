@@ -9,63 +9,127 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.HelloController">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" style="-fx-background-color: #E8E8E8;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.HelloController">
    <children>
-      <VBox prefHeight="720.0" prefWidth="351.0">
+      <!-- COLUMNA IZQUIERDA: NUCLEOS Y DISCO DURO -->
+      <VBox prefHeight="720.0" prefWidth="352.0" spacing="10.0" style="-fx-padding: 20;">
          <children>
-            <AnchorPane prefHeight="358.0" prefWidth="347.0">
+            <!-- SECCION NUCLEOS -->
+            <AnchorPane prefHeight="320.0" prefWidth="315.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;">
                <children>
-                  <Label layoutX="14.0" layoutY="24.0" text="NUCLEOS">
+                  <Label layoutX="79.0" layoutY="14.0" text="NUCLEOS" textFill="#2c3e50">
                      <font>
-                        <Font size="28.0" />
+                        <Font name="System Bold" size="24.0" />
                      </font>
                   </Label>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="362.0" prefWidth="347.0">
-               <children>
-                  <Label layoutX="14.0" layoutY="6.0" text="DISCO DURO">
-                     <font>
-                        <Font size="28.0" />
-                     </font>
-                  </Label>
-               </children>
-            </AnchorPane>
-         </children>
-      </VBox>
-      <VBox prefHeight="720.0" prefWidth="353.0">
-         <children>
-            <AnchorPane prefHeight="720.0" prefWidth="353.0">
-               <children>
-                  <Label fx:id="labelMemoriaRam" layoutX="14.0" layoutY="28.0" text="MEMORIA RAM">
-                     <font>
-                        <Font size="28.0" />
-                     </font>
-                  </Label>
-               </children>
-            </AnchorPane>
-         </children>
-      </VBox>
-      <VBox prefHeight="720.0" prefWidth="375.0">
-         <children>
-            <AnchorPane prefHeight="720.0" prefWidth="338.0">
-               <children>
-                  <Label layoutX="31.0" layoutY="28.0" text="PROCESO">
-                     <font>
-                        <Font size="28.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="botonTerminar" layoutX="153.0" layoutY="591.0" mnemonicParsing="false" onAction="#ActionInButtonTerminar" text="Terminar Simulacion">
-                     <font>
-                        <Font size="18.0" />
-                     </font>
-                  </Button>
-                  <TableView fx:id="tablaProcesos" layoutX="47.0" layoutY="116.0" prefHeight="200.0" prefWidth="200.0">
+
+                  <!-- Tabla de núcleos -->
+                  <TableView fx:id="tablaNucleos" layoutX="14.0" layoutY="50.0" prefHeight="250.0" prefWidth="238.0">
                      <columns>
-                        <TableColumn fx:id="colum1Procesos" prefWidth="199.0" text="Column X" />
-                     </columns></TableView>
+                        <TableColumn fx:id="columnaCoreId" prefWidth="60.0" text="Core" />
+                        <TableColumn fx:id="columnaProceso" prefWidth="100.79998779296875" text="Proceso" />
+                        <TableColumn fx:id="columnaEstado" prefWidth="76.80003356933594" text="Estado" />
+                     </columns>
+                  </TableView>
                </children>
             </AnchorPane>
+
+            <!-- SECCION DISCO DURO -->
+            <AnchorPane prefHeight="320.0" prefWidth="250.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;">
+               <children>
+                  <Label layoutX="50.0" layoutY="14.0" text="DISCO DURO" textFill="#2c3e50">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+
+                  <!-- Tabla de procesos en swap -->
+                  <TableView fx:id="tablaSwap" layoutX="14.0" layoutY="50.0" prefHeight="250.0" prefWidth="220.0">
+                     <columns>
+                        <TableColumn fx:id="columnaProcesoSwap" prefWidth="80.0" text="Proceso" />
+                        <TableColumn fx:id="columnaDireccionesSwap" prefWidth="140.0" text="Direcciones" />
+                     </columns>
+                  </TableView>
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+
+      <!-- COLUMNA CENTRAL: MEMORIA RAM -->
+      <VBox prefHeight="720.0" prefWidth="423.0" spacing="10.0" style="-fx-padding: 20;">
+         <children>
+            <AnchorPane prefHeight="660.0" prefWidth="355.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;">
+               <children>
+                  <Label layoutX="84.0" layoutY="14.0" text="MEMORIA RAM" textFill="#2c3e50">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+
+                  <!-- Tabla de memoria RAM -->
+                  <TableView fx:id="tablaMemoriaRAM" layoutX="14.0" layoutY="50.0" prefHeight="580.0" prefWidth="346.0">
+                     <columns>
+                        <TableColumn fx:id="columnaDireccion" prefWidth="67.20000839233398" text="Dirección" />
+                        <TableColumn fx:id="columnaProcesoId" prefWidth="119.199951171875" text="Proceso ID" />
+                        <TableColumn fx:id="columnaEstadoMemoria" prefWidth="88.00001525878906" text="Estado" />
+                        <TableColumn fx:id="columnaFragmentacion" prefWidth="71.99993896484375" text="Fragmento" />
+                     </columns>
+                  </TableView>
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+
+      <!-- COLUMNA DERECHA: PROCESOS Y CONTROLES -->
+      <VBox prefHeight="720.0" prefWidth="420.0" spacing="10.0" style="-fx-padding: 20;">
+         <children>
+            <!-- Información de tiempo y estado -->
+            <Label fx:id="labelTiempoActual" text="Tiempo actual: 0 | Procesos en cola: 0" textFill="#2c3e50">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Label>
+
+            <!-- Título PROCESO -->
+            <Label text="PROCESOS EN COLA" textFill="#2c3e50">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+            </Label>
+
+                  <!-- Tabla de procesos en cola -->
+            <TableView fx:id="tablaProcesos" prefHeight="300.0" prefWidth="357.0">
+               <columns>
+                  <TableColumn fx:id="columnaProcesoInfo" prefWidth="201.59997940063477" text="Procesos en Cola" />
+                  <TableColumn fx:id="columnaEstadoProceso" prefWidth="81.59996032714844" text="Estado" />
+                  <TableColumn fx:id="columnaAcciones" prefWidth="49.59998779296876" text="Ver" />
+               </columns>
+            </TableView>
+
+            <!-- Sección QUANTUM (solo se muestra para Round Robin) -->
+            <AnchorPane fx:id="panelQuantum" prefHeight="60.0" prefWidth="380.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;" visible="false">
+               <children>
+                  <Label layoutX="14.0" layoutY="10.0" text="QUANTUM:" textFill="#2c3e50">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+
+                  <Label fx:id="labelQuantumValor" layoutX="14.0" layoutY="35.0" text="Valor: 0" textFill="#34495e">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
+
+            <!-- Controles -->
+            <HBox spacing="15.0">
+               <children>
+                  <Button fx:id="botonTerminar" onAction="#ActionInButtonTerminar" prefHeight="45.0" prefWidth="180.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" text="Terminar Simulación" />
+                  <Button fx:id="botonPausar" onAction="#ActionPausarSimulacion" prefHeight="45.0" prefWidth="120.0" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" text="Pausar" />
+               </children>
+            </HBox>
          </children>
       </VBox>
    </children>
