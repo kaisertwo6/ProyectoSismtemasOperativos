@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.EstadisticasController">
+    <children>
+        <AnchorPane prefHeight="720.0" prefWidth="1080.0">
+            <children>
+                <Text layoutX="100.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADISTICAS GENERALES" wrappingWidth="160.0">
+                    <font>
+                        <Font name="System Bold" size="22.0" />
+                    </font>
+                </Text>
+                <Text layoutX="370.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="En promedio:">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Text>
+                <Text layoutX="370.0" layoutY="190.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de respuesta:">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+                <Text layoutX="370.0" layoutY="230.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de espera:">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+                <Text layoutX="370.0" layoutY="270.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de retorno:">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+                <Text layoutY="336.0" strokeType="OUTSIDE" strokeWidth="0.0" text=".........................................................................................................................................." textAlignment="RIGHT" wrappingWidth="1080.0">
+                    <font>
+                        <Font size="36.0" />
+                    </font>
+                </Text>
+                <Text fx:id="txtRespuesta" layoutX="620.0" layoutY="190.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Respuesta 1">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+                <Text fx:id="txtEspera" layoutX="620.0" layoutY="230.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Respuesta 2">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+                <Text fx:id="txtRetorno" layoutX="620.0" layoutY="270.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Respuesta 3">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+                <Text layoutX="100.0" layoutY="528.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADISTICAS INDIVIDUALES" wrappingWidth="160.0">
+                    <font>
+                        <Font name="System Bold" size="22.0" />
+                    </font>
+                </Text>
+                <TableView fx:id="tablaProcesos" layoutX="346.0" layoutY="379.0" prefHeight="273.0" prefWidth="560.0">
+                    <columns>
+                        <TableColumn fx:id="columnaProcesos" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Procesos" />
+                        <TableColumn fx:id="columnaRespuesta" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Tiempo De Respuesta" />
+                        <TableColumn fx:id="columnaEspera" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Tiempo De Espera" />
+                        <TableColumn fx:id="columnaRetorno" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Tiempo De Retorno" />
+                    </columns>
+                </TableView>
+                <Button fx:id="btnProcesos" alignment="CENTER" contentDisplay="TOP" layoutX="933.0" layoutY="623.0" mnemonicParsing="false" onAction="#irInicio" prefHeight="72.0" prefWidth="127.0" style="-fx-background-color: #280EAD;" text="IR A CREAR PROCESOS" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Button>
+            </children>
+        </AnchorPane>
+    </children>
+</VBox>
