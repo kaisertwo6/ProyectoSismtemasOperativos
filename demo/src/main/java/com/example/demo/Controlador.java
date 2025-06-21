@@ -178,6 +178,9 @@ public class Controlador extends Thread {
         }
         System.out.println("]");
     }
+    public boolean getRunnin(){
+        return running;
 
+    }
 
 }

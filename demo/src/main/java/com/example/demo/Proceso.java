@@ -7,10 +7,10 @@ import javafx.beans.property.StringProperty; // Importar si lo vas a usar para e
 
 public class Proceso {
 
-    // CAMBIO IMPORTANTE: Usamos una variable estática para generar IDs únicos y secuenciales.
+
     private static int nextId = 1; // Comienza los IDs desde 1, 2, 3...
 
-    // Propiedades de JavaFX para que la TableView funcione correctamente
+
     private final StringProperty id; // Será el ID visible en la tabla (ej. "P1", "P2")
     private final IntegerProperty duracion; // milisegundos
     private final IntegerProperty tiempoDeLlegada;
