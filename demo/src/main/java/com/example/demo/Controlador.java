@@ -100,8 +100,9 @@ public class Controlador extends Thread {
             if (p.getTiempoDeLlegada() <= tiempoActual) {
                 procesosListos.offer(p);
                 p.setEstado(EstadoProceso.ESPERA);
+                p.setUltimaEntradaColaListos(tiempoActual); // ¡Nuevo!
                 iterator.remove();
-                System.out.println(">> " + p.getId() + " llegó y se añadió a cola de listos (sin memoria aún).");
+                System.out.println(">> " + p.getId() + " llegó y se añadió a cola de listos.");
             } else {
                 break;
             }
@@ -122,6 +123,9 @@ public class Controlador extends Thread {
         for (Core core : cores) {
             if (!core.isOcupado() && !procesosListos.isEmpty()) {
                 Proceso proceso = procesosListos.poll();
+
+                int tiempoEsperaEstaRonda = tiempoActual - proceso.getUltimaEntradaColaListos();
+                proceso.setTiempoDeEspera(proceso.getTiempoDeEspera() + tiempoEsperaEstaRonda);
 
                 if (asignarMemoriaProceso(proceso)) {
                     core.asignarProceso(proceso);
@@ -304,6 +308,11 @@ public class Controlador extends Thread {
     public void setAlgoritmo(TipoAlgoritmo algoritmo) {
         this.algoritmo = algoritmo;
         System.out.println("Algoritmo establecido: " + algoritmo.getNombre());
+    }
+
+    public synchronized void devolverProcesoACola(Proceso proceso) {
+        this.procesosListos.offer(proceso);
+        System.out.println("CONTROLADOR: " + proceso.getId() + " devuelto a la cola de listos (RR).");
     }
 
     public void setQuantum(int quantum) {

@@ -19,6 +19,9 @@ public class Proceso {
     private final IntegerProperty tamanioSlot;
     private EstadoProceso estado; // Asumo que EstadoProceso es una enum
 
+    private IntegerProperty tiempoCpuAcumulado;
+    private int ultimaEntradaColaListos;
+
 
     public Proceso(int duracion, int tiempoDeLlegada, int tamanioSlot) {
 
@@ -30,9 +33,35 @@ public class Proceso {
         this.tiempoDeEspera = new SimpleIntegerProperty(0);
         this.tiempoDeRetorno = new SimpleIntegerProperty(0);
         this.estado = EstadoProceso.ESPERA;
+        this.tiempoCpuAcumulado = new SimpleIntegerProperty(0); // Nueva inicialización
+        this.ultimaEntradaColaListos = tiempoDeLlegada; // Nueva inicialización
     }
 
     // --- Getters para las Propiedades (¡CRUCIAL para PropertyValueFactory!) ---
+    // Dentro de la clase Proceso
+// ... (Tus getters y setters existentes) ...
+
+    public int getTiempoCpuAcumulado() {
+        return tiempoCpuAcumulado.get();
+    }
+
+    public void setTiempoCpuAcumulado(int tiempoCpuAcumulado) {
+        this.tiempoCpuAcumulado.set(tiempoCpuAcumulado);
+    }
+
+    public int getUltimaEntradaColaListos() {
+        return ultimaEntradaColaListos;
+    }
+
+    public void setUltimaEntradaColaListos(int ultimaEntradaColaListos) {
+        this.ultimaEntradaColaListos = ultimaEntradaColaListos;
+    }
+
+    public void incrementarTiempoCpuAcumulado() {
+        this.tiempoCpuAcumulado.set(this.tiempoCpuAcumulado.get() + 1);
+    }
+
+
     public StringProperty idProperty() {
         return id;
     }

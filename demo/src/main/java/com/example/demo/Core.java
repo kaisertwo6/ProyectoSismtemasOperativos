@@ -27,29 +27,46 @@ public class Core extends Thread {
                     int nuevaDuracion = proceso_ejecucion.getDuracion() - 1;
                     proceso_ejecucion.setDuracion(nuevaDuracion);
                     tiempoEjecucion++;
+                    proceso_ejecucion.incrementarTiempoCpuAcumulado();
 
                     System.out.println("Core " + id + " ejecutando " + proceso_ejecucion.getId() +
                             " - Duración restante: " + nuevaDuracion);
+                    if (controlador.algoritmo == TipoAlgoritmo.RR && controlador.quantum > 0 && tiempoEjecucion >= controlador.quantum) {
+                        System.out.println("Core " + id + " - " + proceso_ejecucion.getId() + " PREEMPTO por quantum.");
+                        proceso_ejecucion.setEstado(EstadoProceso.ESPERA); // Vuelve a estado de espera
+
+                        // Actualiza el tiempo en que el proceso entra a la cola de listos de nuevo
+                        proceso_ejecucion.setUltimaEntradaColaListos(controlador.getTiempoActual()); // ¡Nuevo!
+
+                        // Se usa 'devolverProcesoACola' en Controlador para asegurar FIFO en la cola
+                        synchronized (controlador) { // Sincroniza el acceso al controlador
+                            controlador.devolverProcesoACola(proceso_ejecucion); // Nuevo método en Controlador
+                        }
+                        liberarCore();
+                        continue;
+                    }
 
                     if (nuevaDuracion <= 0) {
                         System.out.println("Core " + id + " - " + proceso_ejecucion.getId() + " TERMINADO");
 
                         proceso_ejecucion.setEstado(EstadoProceso.TERMINADO);
-
+                        int tiempoEsperaParcial = controlador.getTiempoActual() - proceso_ejecucion.getUltimaEntradaColaListos();
+                        proceso_ejecucion.setTiempoDeEspera(proceso_ejecucion.getTiempoDeEspera() + tiempoEsperaParcial);
                         int tiempoRetorno = controlador.getTiempoActual() - proceso_ejecucion.getTiempoDeLlegada();
                         int tiempoEspera = tiempoRetorno - tiempoEjecucion;
-                        proceso_ejecucion.setTiempoDeRetorno(tiempoRetorno);
+                        proceso_ejecucion.setTiempoDeEspera(tiempoRetorno - proceso_ejecucion.getTiempoCpuAcumulado());
                         proceso_ejecucion.setTiempoDeEspera(tiempoEspera);
 
-                        controlador.agregarProcesoTerminado(proceso_ejecucion);
-                        System.out.println("DEBUG: " + proceso_ejecucion.getId() + " agregado a lista de terminados");
 
-                        controlador.liberarMemoriaProceso(proceso_ejecucion);
+                        synchronized (controlador) {
+                            controlador.agregarProcesoTerminado(proceso_ejecucion);
+                            System.out.println("DEBUG: " + proceso_ejecucion.getId() + " agregado a lista de terminados");
+                            controlador.liberarMemoriaProceso(proceso_ejecucion); // Esto libera la memoria del proceso terminado
+                        }
                         liberarCore();
                     }
-                } else {
-                    Thread.sleep(500);
                 }
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 running = false;
                 Thread.currentThread().interrupt();

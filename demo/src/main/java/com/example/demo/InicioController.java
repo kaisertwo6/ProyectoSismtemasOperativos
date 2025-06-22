@@ -106,6 +106,7 @@ public class InicioController {
         this.RR = true;
         this.SJF = false;
         System.out.println("Algoritmo seleccionado: Round Robin");
+        controlador.setQuantum(4);
     }
 
     @FXML
