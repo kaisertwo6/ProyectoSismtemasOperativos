@@ -7,9 +7,9 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
+<VBox prefHeight="720.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
     <children>
-        <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="720.0" prefWidth="1080.0" VBox.vgrow="ALWAYS">
+        <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="720.0" prefWidth="1125.0" VBox.vgrow="ALWAYS">
             <children>
                 <Text layoutX="187.0" layoutY="203.0" strokeType="OUTSIDE" strokeWidth="0.0" text="AÑADIR PROCESO:" wrappingWidth="113.39999999999986">
                     <font>
@@ -61,7 +61,7 @@
                         <Font name="System Bold" size="36.0" />
                     </font>
                 </Text>
-                <Text layoutY="390.0" strokeType="OUTSIDE" strokeWidth="0.0" text=".........................................................................................................................................." textAlignment="RIGHT" wrappingWidth="1080.0">
+                <Text layoutY="390.0" strokeType="OUTSIDE" strokeWidth="0.0" text="................................................................................................................................................" textAlignment="RIGHT" wrappingWidth="1125.0">
                     <font>
                         <Font size="36.0" />
                     </font>
@@ -93,21 +93,22 @@
                 </Button>
 
                 <!-- NUEVAS DESCRIPCIONES -->
-                <Text layoutX="1000.0" layoutY="137.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos pequeños" fill="#666666">
+                <Text fill="#666666" layoutX="1000.0" layoutY="137.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos pequeños">
                     <font>
                         <Font size="12.0" />
                     </font>
                 </Text>
-                <Text layoutX="1000.0" layoutY="182.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Fuerza SWAP" fill="#e67e22">
+                <Text fill="#e67e22" layoutX="1000.0" layoutY="182.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Fuerza SWAP">
                     <font>
                         <Font name="System Bold" size="12.0" />
                     </font>
                 </Text>
-                <Text layoutX="1000.0" layoutY="227.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Swapping intensivo" fill="#e74c3c">
+                <Text fill="#e74c3c" layoutX="1000.0" layoutY="227.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Swapping intensivo">
                     <font>
                         <Font name="System Bold" size="12.0" />
                     </font>
                 </Text>
+            <TextField fx:id="txtQuantum" layoutX="462.0" layoutY="554.0" prefHeight="27.0" prefWidth="150.0" promptText="Quantum (4)" style="-fx-border-color: #5284FF;" />
             </children>
         </AnchorPane>
     </children>

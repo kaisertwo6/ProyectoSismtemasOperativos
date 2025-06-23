@@ -19,6 +19,7 @@ public class InicioController {
     @FXML private TextField txtDuracion;
     @FXML private TextField txtSlot;
     @FXML private TextField txtTiempo;
+    @FXML private TextField txtQuantum;
 
     Controlador controlador;
     HelloController controladorProcesos;
@@ -210,7 +211,17 @@ public class InicioController {
         this.RR = true;
         this.SJF = false;
         System.out.println("Algoritmo seleccionado: Round Robin");
-        controlador.setQuantum(4);
+        int valor_Quantum = 4;
+        try{
+            valor_Quantum = Integer.parseInt(txtQuantum.getText());
+            if(valor_Quantum < 4){
+                System.out.println("Este valor no es valido para el Quantum, se ingresa el valor predeterminado");
+                valor_Quantum = 4;
+            }
+        }catch(Exception e){
+            System.out.println("Lo que se ingreso no es valido como valor para el Quantum");
+        }
+        controlador.setQuantum(valor_Quantum);
     }
 
     // Seleccionar algoritmo Shortest Job First

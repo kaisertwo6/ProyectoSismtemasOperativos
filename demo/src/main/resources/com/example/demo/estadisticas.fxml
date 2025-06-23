@@ -9,9 +9,9 @@
 <?import javafx.scene.text.Text?>
 
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.EstadisticasController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.EstadisticasController">
     <children>
-        <AnchorPane prefHeight="720.0" prefWidth="1080.0">
+        <AnchorPane prefHeight="720.0" prefWidth="1125.0">
             <children>
                 <Text layoutX="100.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADISTICAS GENERALES" wrappingWidth="160.0">
                     <font>
@@ -38,7 +38,7 @@
                         <Font size="18.0" />
                     </font>
                 </Text>
-                <Text layoutY="336.0" strokeType="OUTSIDE" strokeWidth="0.0" text=".........................................................................................................................................." textAlignment="RIGHT" wrappingWidth="1080.0">
+                <Text layoutY="336.0" strokeType="OUTSIDE" strokeWidth="0.0" text="................................................................................................................................................" textAlignment="RIGHT" wrappingWidth="1125.0">
                     <font>
                         <Font size="36.0" />
                     </font>
@@ -65,10 +65,10 @@
                 </Text>
                 <TableView fx:id="tablaProcesos" layoutX="346.0" layoutY="379.0" prefHeight="273.0" prefWidth="560.0">
                     <columns>
-                        <TableColumn fx:id="columnaProcesos" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Procesos" />
-                        <TableColumn fx:id="columnaRespuesta" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Tiempo De Respuesta" />
-                        <TableColumn fx:id="columnaEspera" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Tiempo De Espera" />
-                        <TableColumn fx:id="columnaRetorno" prefWidth="140.0" style="-fx-background-color: #5284FF; -fx-border-color: #FFFFFF; -fx-border-width: 2;" text="Tiempo De Retorno" />
+                        <TableColumn fx:id="columnaProcesos" prefWidth="140.0" text="Procesos" />
+                        <TableColumn fx:id="columnaRespuesta" prefWidth="140.0" text="Tiempo De Respuesta" />
+                        <TableColumn fx:id="columnaEspera" prefWidth="140.0" text="Tiempo De Espera" />
+                        <TableColumn fx:id="columnaRetorno" prefWidth="140.0" text="Tiempo De Retorno" />
                     </columns>
                 </TableView>
                 <Button fx:id="btnProcesos" alignment="CENTER" contentDisplay="TOP" layoutX="933.0" layoutY="623.0" mnemonicParsing="false" onAction="#irInicio" prefHeight="72.0" prefWidth="127.0" style="-fx-background-color: #280EAD;" text="IR A CREAR PROCESOS" textAlignment="CENTER" textFill="WHITE" wrapText="true">
