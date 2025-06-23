@@ -83,21 +83,61 @@
       <!-- COLUMNA DERECHA: PROCESOS Y CONTROLES -->
       <VBox prefHeight="720.0" prefWidth="420.0" spacing="10.0" style="-fx-padding: 20;">
          <children>
-            <!-- Información de tiempo y estado -->
-            <Label fx:id="labelTiempoActual" text="Tiempo actual: 0 | Procesos en cola: 0" textFill="#2c3e50">
+            <!-- Información de tiempo y estado SIMPLIFICADA -->
+            <Label fx:id="labelTiempoActual" text="Tiempo: 0 | SWAP: 0 | Terminados: 0" textFill="#2c3e50">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
 
-            <!-- Título PROCESO -->
-            <Label text="PROCESOS EN COLA" textFill="#2c3e50">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Label>
+            <!-- Título PROCESO con botones de velocidad -->
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+               <children>
+                  <Label text="PROCESOS EN COLA" textFill="#2c3e50">
+                     <font>
+                        <Font name="System Bold" size="20.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
 
-                  <!-- Tabla de procesos en cola -->
+            <!-- NUEVOS BOTONES DE VELOCIDAD -->
+            <AnchorPane prefHeight="50.0" prefWidth="380.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;">
+               <children>
+                  <Label layoutX="14.0" layoutY="8.0" text="VELOCIDAD SIMULACIÓN:" textFill="#2c3e50">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+
+                  <HBox layoutX="14.0" layoutY="25.0" spacing="8.0">
+                     <children>
+                        <Button fx:id="btnVelocidadX1" onAction="#cambiarVelocidadX1" prefHeight="20.0" prefWidth="40.0" text="x1">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="btnVelocidadX2" onAction="#cambiarVelocidadX2" prefHeight="20.0" prefWidth="40.0" text="x2">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="btnVelocidadX5" onAction="#cambiarVelocidadX5" prefHeight="20.0" prefWidth="40.0" text="x5">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
+                        <Button fx:id="btnVelocidadX10" onAction="#cambiarVelocidadX10" prefHeight="20.0" prefWidth="40.0" text="x10">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+
+            <!-- Tabla de procesos en cola -->
             <TableView fx:id="tablaProcesos" prefHeight="300.0" prefWidth="357.0">
                <columns>
                   <TableColumn fx:id="columnaProcesoInfo" prefWidth="201.59997940063477" text="Procesos en Cola" />

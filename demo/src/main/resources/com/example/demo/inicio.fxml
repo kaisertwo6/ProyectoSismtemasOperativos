@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -34,11 +33,28 @@
                 </Text>
                 <TextField fx:id="txtSlot" layoutX="610.0" layoutY="150.0" style="-fx-border-color: #5284FF;" />
                 <TextField fx:id="txtDuracion" layoutX="610.0" layoutY="210.0" style="-fx-border-color: #5284FF;" />
-                <Button fx:id="btnRandom" layoutX="831.0" layoutY="143.0" mnemonicParsing="false" onAction="#crearRandom" prefHeight="40.0" prefWidth="113.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="RANDOM">
+
+                <!-- BOTONES DE GENERACIÓN MEJORADOS -->
+                <Button fx:id="btnRandom" layoutX="831.0" layoutY="120.0" mnemonicParsing="false" onAction="#crearRandom" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="RANDOM NORMAL" textFill="WHITE">
                     <font>
-                        <Font size="18.0" />
+                        <Font size="14.0" />
                     </font>
                 </Button>
+
+                <!-- NUEVO: Botón para procesos grandes -->
+                <Button fx:id="btnRandomGrande" layoutX="831.0" layoutY="165.0" mnemonicParsing="false" onAction="#crearRandomGrande" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #e67e22; -fx-background-radius: 15;" text="RANDOM GRANDE" textFill="WHITE">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Button>
+
+                <!-- NUEVO: Botón para escenario extremo -->
+                <Button fx:id="btnEscenarioExtremo" layoutX="831.0" layoutY="210.0" mnemonicParsing="false" onAction="#crearEscenarioExtremo" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #e74c3c; -fx-background-radius: 15;" text="ESCENARIO EXTREMO" textFill="WHITE" wrapText="true">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </Button>
+
                 <TextField fx:id="txtTiempo" layoutX="610.0" layoutY="270.0" style="-fx-border-color: #5284FF;" />
                 <Text layoutX="483.5" layoutY="74.0" strokeType="OUTSIDE" strokeWidth="0.0" text="INICIO" wrappingWidth="113.0">
                     <font>
@@ -75,6 +91,23 @@
                         <Font size="18.0" />
                     </font>
                 </Button>
+
+                <!-- NUEVAS DESCRIPCIONES -->
+                <Text layoutX="1000.0" layoutY="137.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos pequeños" fill="#666666">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </Text>
+                <Text layoutX="1000.0" layoutY="182.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Fuerza SWAP" fill="#e67e22">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Text>
+                <Text layoutX="1000.0" layoutY="227.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Swapping intensivo" fill="#e74c3c">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Text>
             </children>
         </AnchorPane>
     </children>

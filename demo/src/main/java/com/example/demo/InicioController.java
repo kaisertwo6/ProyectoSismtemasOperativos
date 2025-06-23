@@ -13,6 +13,8 @@ public class InicioController {
     @FXML private Button btnInicio;
     @FXML private Button btnRR;
     @FXML private Button btnRandom;
+    @FXML private Button btnRandomGrande;
+    @FXML private Button btnEscenarioExtremo;
     @FXML private Button btnSJF;
     @FXML private TextField txtDuracion;
     @FXML private TextField txtSlot;
@@ -26,9 +28,28 @@ public class InicioController {
 
     @FXML
     public void initialize() {
+        // Limpiar instancia anterior del controlador
+        try {
+            Controlador instanciaAnterior = Controlador.getInstance();
+            if (instanciaAnterior != null) {
+                System.out.println("Limpiando instancia anterior del controlador...");
+                instanciaAnterior.reset();
+            }
+        } catch (Exception e) {
+            System.err.println("Error al limpiar instancia anterior: " + e.getMessage());
+        }
+
         this.controlador = Controlador.getInstance();
+
+        // Resetear variables de selección de algoritmo
+        this.RR = false;
+        this.SJF = false;
+        this.controladorProcesos = null;
+
+        System.out.println("InicioController inicializado correctamente");
     }
 
+    // Añadir proceso individual
     @FXML
     void añadirProceso(ActionEvent event) {
         try {
@@ -43,12 +64,13 @@ public class InicioController {
         }
     }
 
+    // Crear procesos aleatorios normales
     @FXML
     void crearRandom(ActionEvent event) {
         Random random = new Random();
         int cantidadProcesos = random.nextInt(6) + 3; // 3-8 procesos
 
-        System.out.println("=== GENERANDO " + cantidadProcesos + " PROCESOS ALEATORIOS ===");
+        System.out.println("=== GENERANDO " + cantidadProcesos + " PROCESOS ALEATORIOS PEQUEÑOS ===");
 
         for (int i = 0; i < cantidadProcesos; i++) {
             int duracion = random.nextInt(15) + 1;        // 1-15 segundos
@@ -64,9 +86,90 @@ public class InicioController {
                     ", Tamaño: " + tamanioSlot);
         }
 
-        System.out.println("=== " + cantidadProcesos + " PROCESOS ALEATORIOS CREADOS ===");
+        System.out.println("=== " + cantidadProcesos + " PROCESOS ALEATORIOS PEQUEÑOS CREADOS ===");
     }
 
+    // Crear procesos grandes para forzar SWAP
+    @FXML
+    void crearRandomGrande(ActionEvent event) {
+        Random random = new Random();
+        int cantidadProcesos = random.nextInt(8) + 7; // 7-14 procesos
+
+        System.out.println("=== GENERANDO " + cantidadProcesos + " PROCESOS ALEATORIOS GRANDES (PARA SWAP) ===");
+
+        for (int i = 0; i < cantidadProcesos; i++) {
+            int duracion = random.nextInt(20) + 5;        // 5-24 segundos
+            int tiempoLlegada = random.nextInt(15);       // 0-14 segundos
+
+            // Tamaños grandes para forzar swapping
+            int tamanioSlot;
+            if (i < 3) {
+                tamanioSlot = random.nextInt(200) + 150;  // 150-349 slots
+            } else if (i < 6) {
+                tamanioSlot = random.nextInt(150) + 80;   // 80-229 slots
+            } else {
+                tamanioSlot = random.nextInt(100) + 50;   // 50-149 slots
+            }
+
+            Proceso procesoAleatorio = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(procesoAleatorio);
+
+            System.out.println("Proceso GRANDE generado: " + procesoAleatorio.getId() +
+                    " - Duración: " + duracion +
+                    ", Llegada: " + tiempoLlegada +
+                    ", Tamaño: " + tamanioSlot + " slots");
+        }
+
+        System.out.println("=== " + cantidadProcesos + " PROCESOS GRANDES CREADOS ===");
+        System.out.println("RAM disponible: 1024 slots");
+
+        int memoriaTotal = controlador.getProcesosPendientesDeLlegada().stream()
+                .mapToInt(Proceso::getTamanioSlot)
+                .sum();
+
+        System.out.println("Memoria total requerida: " + memoriaTotal + " slots");
+        System.out.println("Exceso de memoria: " + (memoriaTotal - 1024) + " slots -> Irán a SWAP");
+    }
+
+    // Crear escenario extremo para swapping intensivo
+    @FXML
+    void crearEscenarioExtremo(ActionEvent event) {
+        System.out.println("=== CREANDO ESCENARIO EXTREMO DE SWAPPING ===");
+
+        // Procesos que lleguen casi al mismo tiempo y sean muy grandes
+        for (int i = 0; i < 5; i++) {
+            int duracion = 15 + i * 2;                   // 15, 17, 19, 21, 23 segundos
+            int tiempoLlegada = i;                       // 0, 1, 2, 3, 4 segundos
+            int tamanioSlot = 250 + i * 50;              // 250, 300, 350, 400, 450 slots
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+
+            System.out.println("Proceso EXTREMO: " + proceso.getId() +
+                    " - Duración: " + duracion + ", Llegada: " + tiempoLlegada +
+                    ", Tamaño: " + tamanioSlot + " slots");
+        }
+
+        // Procesos más pequeños que compitan por memoria
+        for (int i = 5; i < 10; i++) {
+            int duracion = 8 + i;                        // 13, 14, 15, 16, 17 segundos
+            int tiempoLlegada = 3 + i;                   // 8, 9, 10, 11, 12 segundos
+            int tamanioSlot = 80 + i * 10;               // 130, 140, 150, 160, 170 slots
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+
+            System.out.println("Proceso COMPETIDOR: " + proceso.getId() +
+                    " - Duración: " + duracion + ", Llegada: " + tiempoLlegada +
+                    ", Tamaño: " + tamanioSlot + " slots");
+        }
+
+        System.out.println("=== ESCENARIO EXTREMO CREADO ===");
+        System.out.println("Total memoria requerida: ~2750 slots para RAM de 1024 slots");
+        System.out.println("Resultado esperado: Swapping intensivo y competencia por memoria");
+    }
+
+    // Iniciar simulación
     @FXML
     void iniciarSimulacion(ActionEvent event) throws IOException {
         TipoAlgoritmo tipo = null;
@@ -101,6 +204,7 @@ public class InicioController {
         }
     }
 
+    // Seleccionar algoritmo Round Robin
     @FXML
     void seleccionarRR(ActionEvent event) {
         this.RR = true;
@@ -109,6 +213,7 @@ public class InicioController {
         controlador.setQuantum(4);
     }
 
+    // Seleccionar algoritmo Shortest Job First
     @FXML
     void seleccionarSJF(ActionEvent event) {
         this.RR = false;
