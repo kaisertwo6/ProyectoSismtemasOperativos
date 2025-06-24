@@ -19,6 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
+import java.util.stream.Collectors;
 
 import java.io.IOException;
 import java.util.*;
@@ -417,7 +418,11 @@ public class HelloController extends Thread {
                 procesosEnTabla.put(procesoInfo.getProceso().getId(), procesoInfo);
             }
 
-            // Procesos en ejecución
+            // OBTENER TIEMPO ACTUAL PARA VERIFICAR
+            int tiempoActual = controlador.getTiempoActual();
+            System.out.println("=== ACTUALIZANDO ESTADOS - Tiempo actual: " + tiempoActual + " ===");
+
+            // 1. Procesos EJECUTANDO
             for (Core core : controlador.cores) {
                 if (core.isOcupado() && core.getProcesoEjecucion() != null) {
                     Proceso procesoEjecutandose = core.getProcesoEjecucion();
@@ -439,94 +444,131 @@ public class HelloController extends Thread {
                 }
             }
 
-            // Procesos en RAM esperando (cola de listos)
-            List<Proceso> procesosListosOrdenados = new ArrayList<>(controlador.getProcesosListos());
-            if (controlador.algoritmo == TipoAlgoritmo.SJF) {
-                procesosListosOrdenados.sort((p1, p2) -> Integer.compare(p1.getDuracion(), p2.getDuracion()));
-            }
+            // 2. TODOS LOS DEMÁS PROCESOS - Clasificar correctamente por tiempo de llegada
+            Set<String> procesosYaEjecutando = procesosEjecutandose.stream()
+                    .map(info -> info.getProceso().getId())
+                    .collect(Collectors.toSet());
 
-            for (Proceso proceso : procesosListosOrdenados) {
+            // Obtener todos los procesos del sistema
+            Set<Proceso> todosProcesos = new HashSet<>();
+            todosProcesos.addAll(controlador.getProcesosPendientesDeLlegada());
+            todosProcesos.addAll(controlador.getProcesosListos());
+            todosProcesos.addAll(controlador.getProcesosEnSwap());
+            todosProcesos.addAll(controlador.getProcesosTerminados());
+
+            for (Proceso proceso : todosProcesos) {
+                // Saltar si ya está ejecutando
+                if (procesosYaEjecutando.contains(proceso.getId())) {
+                    continue;
+                }
+
                 procesosConocidos.add(proceso.getId());
 
-                String descripcionLimpia = proceso.getId() + " (D:" +
-                        proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ")";
+                // VERIFICAR TIEMPO DE LLEGADA VS TIEMPO ACTUAL
+                boolean yaLlego = proceso.getTiempoDeLlegada() <= tiempoActual;
 
-                if (procesosEnTabla.containsKey(proceso.getId())) {
-                    ProcesoInfo procesoInfo = procesosEnTabla.get(proceso.getId());
-                    procesoInfo.setProceso(proceso);
-                    procesoInfo.setDescripcion(descripcionLimpia);
-                    procesosEnRamEspera.add(procesoInfo);
-                } else {
-                    ProcesoInfo info = new ProcesoInfo(proceso);
-                    info.setDescripcion(descripcionLimpia);
-                    procesosEnRamEspera.add(info);
-                }
-            }
+                System.out.println("Proceso " + proceso.getId() + " - Llegada: " + proceso.getTiempoDeLlegada() +
+                        ", Actual: " + tiempoActual + ", Ya llegó: " + yaLlego + ", Estado: " + proceso.getEstado());
 
-            // Procesos en SWAP
-            List<Proceso> procesosEnSwapOrdenados = new ArrayList<>(controlador.getProcesosEnSwap());
-            for (Proceso proceso : procesosEnSwapOrdenados) {
-                procesosConocidos.add(proceso.getId());
+                ProcesoInfo info;
+                String descripcionLimpia;
 
-                String descripcionLimpia = proceso.getId() + " (D:" +
-                        proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ")";
+                if (proceso.getEstado() == EstadoProceso.TERMINADO) {
+                    // TERMINADO
+                    descripcionLimpia = proceso.getId() + " (TE:" +
+                            proceso.getTiempoDeEspera() + ", TR:" + proceso.getTiempoDeRetorno() + ")";
 
-                if (procesosEnTabla.containsKey(proceso.getId())) {
-                    ProcesoInfo procesoInfo = procesosEnTabla.get(proceso.getId());
-                    procesoInfo.setProceso(proceso);
-                    procesoInfo.setDescripcion(descripcionLimpia);
-                    procesosEnSwap.add(procesoInfo);
-                } else {
-                    ProcesoInfo info = new ProcesoInfo(proceso);
-                    info.setDescripcion(descripcionLimpia);
-                    procesosEnSwap.add(info);
-                }
-            }
-
-            // Procesos pendientes de llegada
-            List<Proceso> procesosPendientesOrdenados = new ArrayList<>(controlador.getProcesosPendientesDeLlegada());
-            procesosPendientesOrdenados.sort((p1, p2) -> Integer.compare(p1.getTiempoDeLlegada(), p2.getTiempoDeLlegada()));
-
-            for (Proceso procesoPendiente : procesosPendientesOrdenados) {
-                procesosConocidos.add(procesoPendiente.getId());
-
-                String descripcionLimpia = procesoPendiente.getId() + " (D:" +
-                        procesoPendiente.getDuracion() + ", L:" + procesoPendiente.getTiempoDeLlegada() +
-                        ", T:" + procesoPendiente.getTamanioSlot() + ")";
-
-                if (procesosEnTabla.containsKey(procesoPendiente.getId())) {
-                    ProcesoInfo procesoInfo = procesosEnTabla.get(procesoPendiente.getId());
-                    procesoInfo.setProceso(procesoPendiente);
-                    procesoInfo.setDescripcion(descripcionLimpia);
-                    procesosPendientes.add(procesoInfo);
-                } else {
-                    ProcesoInfo info = new ProcesoInfo(procesoPendiente);
-                    info.setDescripcion(descripcionLimpia);
-                    procesosPendientes.add(info);
-                }
-            }
-
-            // Procesos terminados
-            List<Proceso> procesosTerminadosOrdenados = new ArrayList<>(controlador.getProcesosTerminados());
-            procesosTerminadosOrdenados.sort((p1, p2) -> p1.getId().compareTo(p2.getId()));
-
-            for (Proceso procesoTerminado : procesosTerminadosOrdenados) {
-                procesosConocidos.add(procesoTerminado.getId());
-
-                String descripcionLimpia = procesoTerminado.getId() + " (TE:" +
-                        procesoTerminado.getTiempoDeEspera() + ", TR:" + procesoTerminado.getTiempoDeRetorno() + ")";
-
-                if (procesosEnTabla.containsKey(procesoTerminado.getId())) {
-                    ProcesoInfo procesoInfo = procesosEnTabla.get(procesoTerminado.getId());
-                    procesoInfo.setProceso(procesoTerminado);
-                    procesoInfo.setDescripcion(descripcionLimpia);
-                    procesosTerminados.add(procesoInfo);
-                } else {
-                    ProcesoInfo info = new ProcesoInfo(procesoTerminado);
-                    info.setDescripcion(descripcionLimpia);
+                    if (procesosEnTabla.containsKey(proceso.getId())) {
+                        info = procesosEnTabla.get(proceso.getId());
+                        info.setProceso(proceso);
+                        info.setDescripcion(descripcionLimpia);
+                    } else {
+                        info = new ProcesoInfo(proceso);
+                        info.setDescripcion(descripcionLimpia);
+                    }
                     procesosTerminados.add(info);
+
+                } else if (!yaLlego) {
+                    // NO HA LLEGADO AÚN - FORZAR ESTADO PENDIENTE
+                    descripcionLimpia = proceso.getId() + " (D:" +
+                            proceso.getDuracion() + ", L:" + proceso.getTiempoDeLlegada() +
+                            ", T:" + proceso.getTamanioSlot() + ")";
+
+                    if (procesosEnTabla.containsKey(proceso.getId())) {
+                        info = procesosEnTabla.get(proceso.getId());
+                        info.setProceso(proceso);
+                        info.setDescripcion(descripcionLimpia);
+                    } else {
+                        info = new ProcesoInfo(proceso);
+                        info.setDescripcion(descripcionLimpia);
+                    }
+
+                    // FORZAR ESTADO PENDIENTE TEMPORALMENTE PARA LA VISTA
+                    proceso.setEstado(EstadoProceso.PENDIENTE);
+                    procesosPendientes.add(info);
+                    System.out.println("  → CLASIFICADO COMO PENDIENTE");
+
+                } else {
+                    // YA LLEGÓ - Verificar dónde está realmente
+                    if (controlador.getProcesosListos().contains(proceso)) {
+                        // EN RAM
+                        descripcionLimpia = proceso.getId() + " (D:" +
+                                proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ")";
+
+                        if (procesosEnTabla.containsKey(proceso.getId())) {
+                            info = procesosEnTabla.get(proceso.getId());
+                            info.setProceso(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        } else {
+                            info = new ProcesoInfo(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        }
+                        procesosEnRamEspera.add(info);
+                        System.out.println("  → CLASIFICADO COMO EN RAM");
+
+                    } else if (controlador.getProcesosEnSwap().contains(proceso)) {
+                        // EN SWAP
+                        descripcionLimpia = proceso.getId() + " (D:" +
+                                proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ")";
+
+                        if (procesosEnTabla.containsKey(proceso.getId())) {
+                            info = procesosEnTabla.get(proceso.getId());
+                            info.setProceso(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        } else {
+                            info = new ProcesoInfo(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        }
+                        procesosEnSwap.add(info);
+                        System.out.println("  → CLASIFICADO COMO EN SWAP");
+
+                    } else {
+                        // CASO EXTRAÑO - Llegó pero no está en ninguna cola
+                        descripcionLimpia = proceso.getId() + " (D:" +
+                                proceso.getDuracion() + ", L:" + proceso.getTiempoDeLlegada() +
+                                ", T:" + proceso.getTamanioSlot() + ")";
+
+                        if (procesosEnTabla.containsKey(proceso.getId())) {
+                            info = procesosEnTabla.get(proceso.getId());
+                            info.setProceso(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        } else {
+                            info = new ProcesoInfo(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        }
+                        proceso.setEstado(EstadoProceso.PENDIENTE);
+                        procesosPendientes.add(info);
+                        System.out.println("  → CLASIFICADO COMO PENDIENTE (caso extraño)");
+                    }
                 }
             }
+
+            // Ordenar listas
+            if (controlador.algoritmo == TipoAlgoritmo.SJF) {
+                procesosEnRamEspera.sort((p1, p2) -> Integer.compare(p1.getProceso().getDuracion(), p2.getProceso().getDuracion()));
+            }
+            procesosPendientes.sort((p1, p2) -> Integer.compare(p1.getProceso().getTiempoDeLlegada(), p2.getProceso().getTiempoDeLlegada()));
+            procesosTerminados.sort((p1, p2) -> p1.getProceso().getId().compareTo(p2.getProceso().getId()));
 
             // Construir lista final ordenada
             List<ProcesoInfo> procesosOrdenadosFinales = new ArrayList<>();
@@ -535,6 +577,13 @@ public class HelloController extends Thread {
             procesosOrdenadosFinales.addAll(procesosEnSwap);
             procesosOrdenadosFinales.addAll(procesosPendientes);
             procesosOrdenadosFinales.addAll(procesosTerminados);
+
+            System.out.println("RESUMEN CLASIFICACIÓN:");
+            System.out.println("  Ejecutando: " + procesosEjecutandose.size());
+            System.out.println("  En RAM: " + procesosEnRamEspera.size());
+            System.out.println("  En SWAP: " + procesosEnSwap.size());
+            System.out.println("  Pendientes: " + procesosPendientes.size());
+            System.out.println("  Terminados: " + procesosTerminados.size());
 
             listaProcesos.setAll(procesosOrdenadosFinales);
             tablaProcesos.refresh();

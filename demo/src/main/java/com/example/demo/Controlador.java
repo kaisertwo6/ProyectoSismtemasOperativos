@@ -299,27 +299,41 @@ public class Controlador extends Thread {
     // Asignar memoria a un proceso
     private boolean asignarMemoriaProceso(Proceso proceso) {
         int tamanioNecesario = proceso.getTamanioSlot();
+
+        // Contar slots libres disponibles
+        long slotsLibres = ram.stream().mapToLong(slot -> slot == 0 ? 1 : 0).sum();
+
+        if (slotsLibres < tamanioNecesario) {
+            return false;
+        }
+
+        // Crear lista de índices libres
+        List<Integer> indicesLibres = new ArrayList<>();
+        for (int i = 0; i < ram.size(); i++) {
+            if (ram.get(i) == 0) {
+                indicesLibres.add(i);
+            }
+        }
+
+        // Mezclar aleatoriamente los índices libres (RAM = Random Access Memory)
+        Collections.shuffle(indicesLibres);
+
+        // Asignar los primeros N slots aleatorios
+        int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
         List<Integer> direccionesAsignadas = new ArrayList<>();
 
-        int espaciosEncontrados = 0;
-        for (int i = 0; i < ram.size() && espaciosEncontrados < tamanioNecesario; i++) {
-            if (ram.get(i) == 0) {
-                direccionesAsignadas.add(i);
-                espaciosEncontrados++;
-            }
+        for (int i = 0; i < tamanioNecesario; i++) {
+            int indiceAleatorio = indicesLibres.get(i);
+            ram.set(indiceAleatorio, procesoId);
+            direccionesAsignadas.add(indiceAleatorio);
         }
 
-        if (espaciosEncontrados >= tamanioNecesario) {
-            int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
-            for (int direccion : direccionesAsignadas.subList(0, tamanioNecesario)) {
-                ram.set(direccion, procesoId);
-            }
-            System.out.println("Memoria asignada a " + proceso.getId() +
-                    " en direcciones: " + direccionesAsignadas.subList(0, tamanioNecesario));
-            return true;
-        }
+        // Ordenar direcciones para mostrar mejor en logs
+        direccionesAsignadas.sort(Integer::compareTo);
 
-        return false;
+        System.out.println("Memoria ALEATORIA asignada a " + proceso.getId() +
+                " en direcciones: " + direccionesAsignadas);
+        return true;
     }
 
     private boolean realizarSwapping(Proceso procesoNuevo) {
