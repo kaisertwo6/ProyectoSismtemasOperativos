@@ -19,9 +19,11 @@ public class Controlador extends Thread {
     private static Controlador instance;
 
     List<Integer> ram;
+    List<Integer> swap;
     TipoAlgoritmo algoritmo;
     private Queue<Proceso> procesosListos;
     private Queue<Proceso> procesosEnSwap;
+    private Queue<Proceso> procesosEnColaEspera;
     List<Core> cores;
     private List<Proceso> procesosPendientesDeLlegada;
     private List<Proceso> procesosTerminados;
@@ -29,8 +31,7 @@ public class Controlador extends Thread {
     private final ReentrantLock memoriaLock = new ReentrantLock();
     private final ReentrantLock swapLock = new ReentrantLock();
 
-    // Control de sincronización para procesos hijos
-    private final Semaphore forkSemaphore = new Semaphore(10); // Máximo 10 operaciones fork simultáneas
+    private final Semaphore forkSemaphore = new Semaphore(10);
     private final ReentrantLock forkLock = new ReentrantLock();
 
     int tiempoDeLlegadaProm;
@@ -39,30 +40,34 @@ public class Controlador extends Thread {
     int quantum;
 
     Map<String, List<Integer>> listaDireccionesProcesMem;
-    public Map<Integer, String> memoriaAProceso; // Mapear dirección de memoria -> ID de proceso (público para acceso desde HelloController)
+    public Map<Integer, String> memoriaAProceso;
+    public Map<Integer, String> swapAProceso;
 
     private int tiempoActual;
     private volatile boolean running;
     private volatile int velocidadSimulacion = 1000;
 
-    // Control de pausa
     private volatile boolean pausado = false;
     private final Object pausaLock = new Object();
 
     private final int TAMAÑO_RAM = 1024;
+    private int tamaño_swap = 512; // MODIFICADO: Ahora es variable
+    private boolean swapLimitado = true; // NUEVO: Flag para controlar si SWAP es limitado
     private final int NUMERO_CORES = 4;
 
     private Controlador() {
         this.ram = new ArrayList<>(Collections.nCopies(TAMAÑO_RAM, 0));
+        this.swap = new ArrayList<>(Collections.nCopies(tamaño_swap, 0));
         this.procesosListos = new LinkedList<>();
         this.procesosEnSwap = new LinkedList<>();
+        this.procesosEnColaEspera = new LinkedList<>();
         this.cores = new ArrayList<>();
         this.procesosPendientesDeLlegada = new ArrayList<>();
         this.procesosTerminados = new ArrayList<>();
         this.listaDireccionesProcesMem = new HashMap<>();
-        this.memoriaAProceso = new HashMap<>(); // Inicializar el mapa de memoria a proceso
+        this.memoriaAProceso = new HashMap<>();
+        this.swapAProceso = new HashMap<>();
 
-        // Crear e iniciar cores
         for (int i = 1; i <= NUMERO_CORES; i++) {
             Core core = new Core(i, this);
             cores.add(core);
@@ -84,12 +89,28 @@ public class Controlador extends Thread {
         return instance;
     }
 
-    // Pausar/reanudar simulación
+    // NUEVO: Configurar modo de SWAP
+    public void configurarSwap(boolean limitado, int tamaño) {
+        this.swapLimitado = limitado;
+        if (limitado) {
+            this.tamaño_swap = tamaño;
+            // Redimensionar SWAP si es necesario
+            if (swap.size() != tamaño) {
+                swap.clear();
+                swap.addAll(Collections.nCopies(tamaño, 0));
+                swapAProceso.clear();
+            }
+        } else {
+            // SWAP ilimitado: usar un tamaño muy grande
+            this.tamaño_swap = Integer.MAX_VALUE;
+        }
+        System.out.println("SWAP configurado: " + (limitado ? "Limitado (" + tamaño + " slots)" : "Ilimitado"));
+    }
+
     public void setPausado(boolean pausado) {
         synchronized (pausaLock) {
             this.pausado = pausado;
 
-            // Notificar a cores sobre cambio de pausa
             for (Core core : cores) {
                 core.setPausado(pausado);
             }
@@ -97,8 +118,6 @@ public class Controlador extends Thread {
             if (!pausado) {
                 pausaLock.notifyAll();
             }
-
-            System.out.println("Simulación " + (pausado ? "PAUSADA" : "REANUDADA"));
         }
     }
 
@@ -106,12 +125,10 @@ public class Controlador extends Thread {
         return pausado;
     }
 
-    // Esperar cuando está pausado
     private void esperarSiPausado() {
         synchronized (pausaLock) {
             while (pausado && running) {
                 try {
-                    System.out.println("Controlador pausado, esperando...");
                     pausaLock.wait();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -127,8 +144,6 @@ public class Controlador extends Thread {
         for (Core core : cores) {
             core.setVelocidadSimulacion(nuevaVelocidad);
         }
-
-        System.out.println("Velocidad de simulación cambiada a: " + (1000.0/nuevaVelocidad) + "x");
     }
 
     public int getVelocidadSimulacion() {
@@ -137,9 +152,9 @@ public class Controlador extends Thread {
 
     @Override
     public void run() {
-        // Ordenar procesos por tiempo de llegada
         Collections.sort(procesosPendientesDeLlegada, Comparator.comparingInt(Proceso::getTiempoDeLlegada));
-        System.out.println("=== INICIO SIMULACIÓN ===\n");
+        System.out.println("=== INICIO SIMULACIÓN ===");
+        System.out.println("SWAP: " + (swapLimitado ? "Limitado (" + tamaño_swap + " slots)" : "Ilimitado"));
 
         while (running) {
             esperarSiPausado();
@@ -149,9 +164,9 @@ public class Controlador extends Thread {
             tiempoActual++;
             System.out.println("\n--- Tiempo: " + tiempoActual + " ---");
 
-            // Flujo principal de simulación
             verificarLlegadaProcesos();
             cargarProcesosDesdeSwap();
+            procesarColaEspera();
 
             if (algoritmo == TipoAlgoritmo.SJF) {
                 reordenarColaSJF();
@@ -169,7 +184,6 @@ public class Controlador extends Thread {
             try {
                 Thread.sleep(velocidadSimulacion);
             } catch (InterruptedException e) {
-                System.out.println("Simulación interrumpida.");
                 running = false;
                 Thread.currentThread().interrupt();
                 break;
@@ -177,7 +191,6 @@ public class Controlador extends Thread {
         }
     }
 
-    // Verificar llegada de procesos y cargarlos (con prioridad a procesos hijos)
     private void verificarLlegadaProcesos() {
         Iterator<Proceso> iterator = procesosPendientesDeLlegada.iterator();
 
@@ -186,17 +199,19 @@ public class Controlador extends Thread {
             if (p.getTiempoDeLlegada() <= tiempoActual) {
                 iterator.remove();
 
-                // Dar prioridad a procesos hijos en la carga de memoria
+                if (p.esPrograma()) {
+                    System.out.println(">> PROGRAMA " + p.getId() + " llegó (controlador, no se ejecuta directamente)");
+                    continue;
+                }
+
                 boolean esHijo = p.esProcesoHijo();
                 boolean cargado = false;
-                
+
                 if (esHijo) {
-                    // Intentar cargar proceso hijo con prioridad
                     if (cargarProcesoEnMemoria(p)) {
                         cargado = true;
                         System.out.println(">> 👶 HIJO " + p.getId() + " llegó y se cargó en RAM (PRIORIDAD).");
                     } else {
-                        // Si no cabe, intentar hacer espacio liberando un proceso no-hijo
                         if (liberarEspacioParaHijo(p)) {
                             if (cargarProcesoEnMemoria(p)) {
                                 cargado = true;
@@ -205,23 +220,89 @@ public class Controlador extends Thread {
                         }
                     }
                 } else {
-                    // Proceso normal
                     cargado = cargarProcesoEnMemoria(p);
                 }
-                
+
                 if (cargado) {
                     procesosListos.offer(p);
                     p.setEstado(EstadoProceso.ESPERA);
                     p.setUltimaEntradaColaListos(tiempoActual);
                     if (!esHijo) {
-                        System.out.println(">> " + p.getId() + " llegó y se cargó en RAM.");
+                        String tipoMsg = p.getNombrePrograma() != null ?
+                                " (Parte de " + p.getNombrePrograma() + ")" : "";
+                        System.out.println(">> " + p.getId() + " llegó y se cargó en RAM" + tipoMsg);
                     }
                 } else {
-                    moverProcesoASwap(p);
-                    String tipoMsg = esHijo ? "👶 HIJO " : "";
-                    System.out.println(">> " + tipoMsg + p.getId() + " llegó pero fue a SWAP (RAM llena).");
+                    intentarMoverASwapOColaEspera(p);
                 }
             } else {
+                break;
+            }
+        }
+    }
+
+    private void intentarMoverASwapOColaEspera(Proceso proceso) {
+        if (moverProcesoASwap(proceso)) {
+            String tipoMsg = proceso.esProcesoHijo() ? "👶 HIJO " : "";
+            if (proceso.getNombrePrograma() != null) {
+                tipoMsg += "(Parte de " + proceso.getNombrePrograma() + ") ";
+            }
+            System.out.println(">> " + tipoMsg + proceso.getId() + " llegó y fue a SWAP.");
+        } else {
+            if (swapLimitado) {
+                moverProcesoAColaEspera(proceso);
+                String tipoMsg = proceso.esProcesoHijo() ? "👶 HIJO " : "";
+                if (proceso.getNombrePrograma() != null) {
+                    tipoMsg += "(Parte de " + proceso.getNombrePrograma() + ") ";
+                }
+                System.out.println(">> " + tipoMsg + proceso.getId() + " llegó y fue a COLA DE ESPERA (SWAP lleno).");
+            } else {
+                // SWAP ilimitado: expandir automáticamente
+                expandirSwap(proceso.getTamanioSlot());
+                moverProcesoASwap(proceso);
+                String tipoMsg = proceso.esProcesoHijo() ? "👶 HIJO " : "";
+                if (proceso.getNombrePrograma() != null) {
+                    tipoMsg += "(Parte de " + proceso.getNombrePrograma() + ") ";
+                }
+                System.out.println(">> " + tipoMsg + proceso.getId() + " llegó y fue a SWAP (expandido automáticamente).");
+            }
+        }
+    }
+
+    // NUEVO: Expandir SWAP cuando es ilimitado
+    private void expandirSwap(int tamanioNecesario) {
+        int slotsLibres = Collections.frequency(swap, 0);
+        if (slotsLibres < tamanioNecesario) {
+            int slotsAgregar = tamanioNecesario - slotsLibres + 100; // Agregar un poco extra
+            for (int i = 0; i < slotsAgregar; i++) {
+                swap.add(0);
+            }
+            System.out.println("SWAP expandido: +" + slotsAgregar + " slots (total: " + swap.size() + ")");
+        }
+    }
+
+    private void moverProcesoAColaEspera(Proceso proceso) {
+        procesosEnColaEspera.offer(proceso);
+        proceso.setEstado(EstadoProceso.PENDIENTE);
+    }
+
+    private void procesarColaEspera() {
+        if (procesosEnColaEspera.isEmpty()) return;
+
+        Iterator<Proceso> iterator = procesosEnColaEspera.iterator();
+        while (iterator.hasNext()) {
+            Proceso proceso = iterator.next();
+
+            if (cargarProcesoEnMemoria(proceso)) {
+                iterator.remove();
+                procesosListos.offer(proceso);
+                proceso.setEstado(EstadoProceso.ESPERA);
+                proceso.setUltimaEntradaColaListos(tiempoActual);
+                System.out.println("COLA->RAM: " + proceso.getId() + " movido de cola de espera a RAM");
+                break;
+            } else if (moverProcesoASwap(proceso)) {
+                iterator.remove();
+                System.out.println("COLA->SWAP: " + proceso.getId() + " movido de cola de espera a SWAP");
                 break;
             }
         }
@@ -236,25 +317,71 @@ public class Controlador extends Thread {
         }
     }
 
-    private void moverProcesoASwap(Proceso proceso) {
+    private boolean moverProcesoASwap(Proceso proceso) {
         swapLock.lock();
         try {
+            if (swapLimitado && !asignarSwapProceso(proceso)) {
+                return false;
+            } else if (!swapLimitado) {
+                expandirSwap(proceso.getTamanioSlot());
+                asignarSwapProceso(proceso);
+            }
+
             procesosEnSwap.offer(proceso);
             proceso.setEstado(EstadoProceso.SWAP);
 
-            List<Integer> direccionesSwap = new ArrayList<>();
-            for (int i = 0; i < proceso.getTamanioSlot(); i++) {
-                direccionesSwap.add(1000 + procesosEnSwap.size() * 100 + i);
+            if (swapLimitado) {
+                System.out.println("SWAP: " + proceso.getId() + " movido a disco (" +
+                        obtenerSlotsLibresSwap() + "/" + tamaño_swap + " slots libres)");
+            } else {
+                System.out.println("SWAP: " + proceso.getId() + " movido a disco (SWAP ilimitado - " + swap.size() + " slots totales)");
             }
-            listaDireccionesProcesMem.put(proceso.getId(), direccionesSwap);
-
-            System.out.println("SWAP: " + proceso.getId() + " movido a disco en direcciones " + direccionesSwap);
+            return true;
         } finally {
             swapLock.unlock();
         }
     }
 
-    // Cargar procesos desde SWAP a memoria cuando hay espacio
+    private boolean asignarSwapProceso(Proceso proceso) {
+        int tamanioNecesario = proceso.getTamanioSlot();
+
+        if (swapLimitado) {
+            long slotsLibresSwap = swap.stream().mapToLong(slot -> slot == 0 ? 1 : 0).sum();
+            if (slotsLibresSwap < tamanioNecesario) {
+                return false;
+            }
+        }
+
+        List<Integer> indicesLibres = new ArrayList<>();
+        for (int i = 0; i < swap.size(); i++) {
+            if (swap.get(i) == 0) {
+                indicesLibres.add(i);
+            }
+        }
+
+        Collections.shuffle(indicesLibres);
+
+        String procesoIdStr = proceso.getId();
+        int procesoIdNum = extraerNumeroIdProceso(procesoIdStr);
+        List<Integer> direccionesAsignadas = new ArrayList<>();
+
+        for (int i = 0; i < tamanioNecesario; i++) {
+            int indiceAleatorio = indicesLibres.get(i);
+            swap.set(indiceAleatorio, procesoIdNum);
+            direccionesAsignadas.add(1000 + indiceAleatorio);
+            swapAProceso.put(indiceAleatorio, procesoIdStr);
+        }
+
+        direccionesAsignadas.sort(Integer::compareTo);
+        listaDireccionesProcesMem.put(proceso.getId(), direccionesAsignadas);
+
+        return true;
+    }
+
+    private int obtenerSlotsLibresSwap() {
+        return Collections.frequency(swap, 0);
+    }
+
     private void cargarProcesosDesdeSwap() {
         if (procesosEnSwap.isEmpty()) return;
 
@@ -267,6 +394,7 @@ public class Controlador extends Thread {
 
                 if (asignarMemoriaProceso(proceso)) {
                     iterator.remove();
+                    liberarSwapProceso(proceso);
                     procesosListos.offer(proceso);
                     proceso.setEstado(EstadoProceso.ESPERA);
                     proceso.setUltimaEntradaColaListos(tiempoActual);
@@ -283,33 +411,36 @@ public class Controlador extends Thread {
         }
     }
 
-    // Reordenar cola para SJF (menor duración primero)
+    private void liberarSwapProceso(Proceso proceso) {
+        String procesoIdStr = proceso.getId();
+        List<Integer> direccionesLiberadas = new ArrayList<>();
+
+        for (int i = 0; i < swap.size(); i++) {
+            if (swapAProceso.containsKey(i) && swapAProceso.get(i).equals(procesoIdStr)) {
+                swap.set(i, 0);
+                swapAProceso.remove(i);
+                direccionesLiberadas.add(i);
+            }
+        }
+    }
+
     private void reordenarColaSJF() {
         if (!procesosListos.isEmpty()) {
             List<Proceso> listaTemp = new ArrayList<>(procesosListos);
             Collections.sort(listaTemp, Comparator.comparingInt(Proceso::getDuracion));
             procesosListos.clear();
             procesosListos.addAll(listaTemp);
-            System.out.println("Cola reordenada por SJF (menor duración primero)");
         }
     }
 
-    // Asignar procesos a cores disponibles
     private void asignarProcesosACores() {
         for (Core core : cores) {
             if (!core.isOcupado() && !procesosListos.isEmpty()) {
                 Proceso proceso = procesosListos.poll();
 
-                // Calcular tiempo de espera acumulado
                 int tiempoEsperaEstaRonda = tiempoActual - proceso.getUltimaEntradaColaListos();
                 int tiempoEsperaTotal = proceso.getTiempoDeEspera() + tiempoEsperaEstaRonda;
                 proceso.setTiempoDeEspera(tiempoEsperaTotal);
-
-                System.out.println("ASIGNACIÓN - " + proceso.getId() + ":");
-                System.out.println("  Última entrada cola: " + proceso.getUltimaEntradaColaListos());
-                System.out.println("  Tiempo actual: " + tiempoActual);
-                System.out.println("  Espera esta ronda: " + tiempoEsperaEstaRonda);
-                System.out.println("  Espera total acumulada: " + tiempoEsperaTotal);
 
                 core.asignarProceso(proceso);
                 System.out.println(">> " + proceso.getId() + " asignado a Core " + core.getCoreId());
@@ -317,42 +448,37 @@ public class Controlador extends Thread {
         }
     }
 
-    // Liberar memoria cuando termina un proceso
     public void liberarMemoriaProceso(Proceso proceso) {
         memoriaLock.lock();
         try {
             String procesoIdStr = proceso.getId();
             List<Integer> direccionesLiberadas = new ArrayList<>();
 
-            // Buscar direcciones que pertenecen a este proceso específico
             for (int i = 0; i < ram.size(); i++) {
                 if (memoriaAProceso.containsKey(i) && memoriaAProceso.get(i).equals(procesoIdStr)) {
                     ram.set(i, 0);
-                    memoriaAProceso.remove(i); // Limpiar el mapeo
+                    memoriaAProceso.remove(i);
                     direccionesLiberadas.add(i);
                 }
             }
 
-            System.out.println("Memoria liberada de " + proceso.getId() + ": " + direccionesLiberadas);
             cargarProcesosDesdeSwap();
+            procesarColaEspera();
 
         } finally {
             memoriaLock.unlock();
         }
     }
 
-    // Asignar memoria a un proceso
     private boolean asignarMemoriaProceso(Proceso proceso) {
         int tamanioNecesario = proceso.getTamanioSlot();
 
-        // Contar slots libres disponibles
         long slotsLibres = ram.stream().mapToLong(slot -> slot == 0 ? 1 : 0).sum();
 
         if (slotsLibres < tamanioNecesario) {
             return false;
         }
 
-        // Crear lista de índices libres
         List<Integer> indicesLibres = new ArrayList<>();
         for (int i = 0; i < ram.size(); i++) {
             if (ram.get(i) == 0) {
@@ -360,82 +486,43 @@ public class Controlador extends Thread {
             }
         }
 
-        // Mezclar aleatoriamente los índices libres (RAM = Random Access Memory)
         Collections.shuffle(indicesLibres);
 
-        // Asignar los primeros N slots aleatorios
-        String procesoIdStr = proceso.getId(); // ID completo (incluye .H1, .H2, etc.)
-        int procesoIdNum = extraerNumeroIdProceso(procesoIdStr); // Solo número para compatibilidad
+        String procesoIdStr = proceso.getId();
+        int procesoIdNum = extraerNumeroIdProceso(procesoIdStr);
         List<Integer> direccionesAsignadas = new ArrayList<>();
 
         for (int i = 0; i < tamanioNecesario; i++) {
             int indiceAleatorio = indicesLibres.get(i);
             ram.set(indiceAleatorio, procesoIdNum);
             direccionesAsignadas.add(indiceAleatorio);
-            memoriaAProceso.put(indiceAleatorio, procesoIdStr); // Mapear dirección a proceso completo
+            memoriaAProceso.put(indiceAleatorio, procesoIdStr);
         }
 
-        // Ordenar direcciones para mostrar mejor en logs
         direccionesAsignadas.sort(Integer::compareTo);
 
-        System.out.println("Memoria ALEATORIA asignada a " + proceso.getId() +
-                " en direcciones: " + direccionesAsignadas);
         return true;
     }
 
-    private boolean realizarSwapping(Proceso procesoNuevo) {
-        memoriaLock.lock();
-        swapLock.lock();
-        try {
-            Set<String> procesosEjecutandose = cores.stream()
-                    .filter(Core::isOcupado)
-                    .filter(core -> core.getProcesoEjecucion() != null)
-                    .map(core -> core.getProcesoEjecucion().getId())
-                    .collect(Collectors.toSet());
-
-            Iterator<Proceso> iterator = procesosListos.iterator();
-            while (iterator.hasNext()) {
-                Proceso candidatoSwap = iterator.next();
-
-                if (!procesosEjecutandose.contains(candidatoSwap.getId())) {
-                    liberarMemoriaProcesoSinCargarDesdeSwap(candidatoSwap);
-                    iterator.remove();
-                    moverProcesoASwap(candidatoSwap);
-
-                    System.out.println("SWAP: " + candidatoSwap.getId() + " movido a disco para hacer espacio");
-
-                    if (asignarMemoriaProceso(procesoNuevo)) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        } finally {
-            swapLock.unlock();
-            memoriaLock.unlock();
-        }
-    }
-
-    private void liberarMemoriaProcesoSinCargarDesdeSwap(Proceso proceso) {
-        int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
-        for (int i = 0; i < ram.size(); i++) {
-            if (ram.get(i) == procesoId) {
-                ram.set(i, 0);
-                memoriaAProceso.remove(i); // Desmapear dirección de proceso
-            }
-        }
-    }
-
-    // Verificar si todos los procesos han terminado
     private boolean todosProcesosTerminados() {
-        return procesosPendientesDeLlegada.isEmpty() &&
-                procesosListos.isEmpty() &&
-                procesosEnSwap.isEmpty() &&
+        boolean hayProcesosEjecutablesPendientes = procesosPendientesDeLlegada.stream()
+                .anyMatch(p -> !p.esPrograma());
+
+        boolean hayProcesosEjecutablesEnRam = procesosListos.stream()
+                .anyMatch(p -> !p.esPrograma());
+
+        boolean hayProcesosEjecutablesEnSwap = procesosEnSwap.stream()
+                .anyMatch(p -> !p.esPrograma());
+
+        boolean hayProcesosEnColaEspera = !procesosEnColaEspera.isEmpty();
+
+        return !hayProcesosEjecutablesPendientes &&
+                !hayProcesosEjecutablesEnRam &&
+                !hayProcesosEjecutablesEnSwap &&
+                !hayProcesosEnColaEspera &&
                 cores.stream().noneMatch(Core::isOcupado);
     }
 
-    // Calcular estadísticas finales
     private void calcularEstadisticasFinales() {
         if (procesosTerminados.isEmpty()) return;
 
@@ -453,72 +540,57 @@ public class Controlador extends Thread {
     private void mostrarEstadoActual() {
         System.out.println("Procesos en RAM (listos): " + procesosListos.size());
         System.out.println("Procesos en SWAP: " + procesosEnSwap.size());
+        if (swapLimitado) {
+            System.out.println("Procesos en COLA ESPERA: " + procesosEnColaEspera.size());
+        }
         System.out.println("Cores ocupados: " + cores.stream().mapToInt(c -> c.isOcupado() ? 1 : 0).sum());
 
-        Set<Integer> procesosEnMemoria = new HashSet<>();
-        for (Integer procesoId : ram) {
-            if (procesoId != 0) {
-                procesosEnMemoria.add(procesoId);
-            }
-        }
-        System.out.println("Procesos en memoria: " + procesosEnMemoria);
         System.out.println("Memoria libre: " + Collections.frequency(ram, 0) + "/" + TAMAÑO_RAM);
+        if (swapLimitado) {
+            System.out.println("SWAP libre: " + Collections.frequency(swap, 0) + "/" + tamaño_swap);
+        } else {
+            System.out.println("SWAP ilimitado: " + Collections.frequency(swap, 0) + " libres / " + swap.size() + " totales");
+        }
     }
 
     public void agregarProcesoTerminado(Proceso proceso) {
         procesosTerminados.add(proceso);
-        System.out.println("CONTROLADOR: " + proceso.getId() + " agregado a lista de terminados");
     }
 
     public void agregarProcesoAlSistema(Proceso p) {
         procesosPendientesDeLlegada.add(p);
-        System.out.println(p.getId() + " añadido al sistema. Llegada: " + p.getTiempoDeLlegada());
     }
 
     public void setAlgoritmo(TipoAlgoritmo algoritmo) {
         this.algoritmo = algoritmo;
-        System.out.println("Algoritmo establecido: " + algoritmo.getNombre());
     }
 
-    // Devolver proceso a cola (Round Robin)
     public synchronized void devolverProcesoACola(Proceso proceso) {
         this.procesosListos.offer(proceso);
         proceso.setUltimaEntradaColaListos(tiempoActual);
-        System.out.println("CONTROLADOR: " + proceso.getId() + " devuelto a la cola de listos (RR).");
     }
 
     public void setQuantum(int quantum) {
         this.quantum = quantum;
-        System.out.println("Quantum establecido: " + quantum);
     }
 
-    // Método seguro para agregar procesos hijos con control de sincronización
     public boolean agregarProcesoHijoAlSistema(Proceso procesoHijo) {
         try {
-            // Adquirir semáforo para limitar operaciones concurrentes
             forkSemaphore.acquire();
-            
+
             forkLock.lock();
             try {
-                // Verificar que el proceso hijo es válido
                 if (procesoHijo == null) {
                     return false;
                 }
-                
-                // Agregar a la lista de procesos pendientes
+
                 procesosPendientesDeLlegada.add(procesoHijo);
-                
-                System.out.println("🚀 HIJO AGREGADO: " + procesoHijo.getId() + 
-                                 " (Padre: " + (procesoHijo.getProcesoPadre() != null ? 
-                                   procesoHijo.getProcesoPadre().getId() : "N/A") + 
-                                 ", Llegada: " + procesoHijo.getTiempoDeLlegada() + ")");
                 return true;
-                
+
             } finally {
                 forkLock.unlock();
             }
         } catch (InterruptedException e) {
-            System.err.println("Error al agregar proceso hijo: " + e.getMessage());
             Thread.currentThread().interrupt();
             return false;
         } finally {
@@ -526,23 +598,23 @@ public class Controlador extends Thread {
         }
     }
 
-    // Liberar espacio en memoria para un proceso hijo prioritario
     private boolean liberarEspacioParaHijo(Proceso procesoHijo) {
         memoriaLock.lock();
         try {
-            // Buscar procesos no-hijos en RAM que puedan moverse a SWAP
             Iterator<Proceso> iterator = procesosListos.iterator();
             while (iterator.hasNext()) {
                 Proceso candidato = iterator.next();
-                
-                // Solo mover procesos que NO sean hijos y que no estén ejecutándose
+
                 if (!candidato.esProcesoHijo() && !estaEjecutandose(candidato)) {
                     iterator.remove();
                     liberarMemoriaProcesoSinCargarDesdeSwap(candidato);
-                    moverProcesoASwap(candidato);
-                    
-                    System.out.println("🔄 SWAP PARA HIJO: " + candidato.getId() + 
-                                     " movido a SWAP para hacer espacio a " + procesoHijo.getId());
+
+                    if (!moverProcesoASwap(candidato)) {
+                        if (swapLimitado) {
+                            moverProcesoAColaEspera(candidato);
+                        }
+                    }
+
                     return true;
                 }
             }
@@ -551,53 +623,57 @@ public class Controlador extends Thread {
             memoriaLock.unlock();
         }
     }
-    
-    // Verificar si un proceso está ejecutándose en algún core
+
     private boolean estaEjecutandose(Proceso proceso) {
-        return cores.stream().anyMatch(core -> 
-            core.isOcupado() && 
-            core.getProcesoEjecucion() != null && 
-            core.getProcesoEjecucion().getId().equals(proceso.getId())
+        return cores.stream().anyMatch(core ->
+                core.isOcupado() &&
+                        core.getProcesoEjecucion() != null &&
+                        core.getProcesoEjecucion().getId().equals(proceso.getId())
         );
     }
 
-    // Método auxiliar para extraer el número de ID de un proceso (maneja hijos)
+    private void liberarMemoriaProcesoSinCargarDesdeSwap(Proceso proceso) {
+        int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
+        for (int i = 0; i < ram.size(); i++) {
+            if (ram.get(i) == procesoId) {
+                ram.set(i, 0);
+                memoriaAProceso.remove(i);
+            }
+        }
+    }
+
     private int extraerNumeroIdProceso(String procesoId) {
         try {
-            // Para "Proceso 1" devuelve 1
-            // Para "Proceso 1.H1" devuelve 1 (el del padre)
             String[] partes = procesoId.replace("Proceso ", "").split("\\.");
             return Integer.parseInt(partes[0]);
         } catch (Exception e) {
-            System.err.println("Error al extraer ID de proceso: " + procesoId);
-            return 1; // Valor por defecto
+            return 1;
         }
     }
 
     // Getters
     public Queue<Proceso> getProcesosListos() { return procesosListos; }
     public Queue<Proceso> getProcesosEnSwap() { return procesosEnSwap; }
+    public Queue<Proceso> getProcesosEnColaEspera() { return procesosEnColaEspera; }
     public void setRunning(boolean running) { this.running = running; }
     public int getTiempoActual() { return tiempoActual; }
     public List<Proceso> getProcesosPendientesDeLlegada() { return procesosPendientesDeLlegada; }
     public boolean getRunnin() { return running; }
     public List<Proceso> getProcesosTerminados() { return procesosTerminados; }
+    public int getTamañoSwap() { return swapLimitado ? tamaño_swap : swap.size(); } // MODIFICADO
+    public List<Integer> getSwap() { return swap; }
+    public boolean isSwapLimitado() { return swapLimitado; } // NUEVO
 
-    // Reset completo del controlador
     public void reset() {
-        System.out.println("=== INICIANDO RESET DEL CONTROLADOR ===");
-
         this.running = false;
         this.pausado = false;
 
-        // Detener cores
         for (Core core : cores) {
             if (core != null) {
                 core.detener();
             }
         }
 
-        // Esperar terminación de hilos
         try {
             if (this.isAlive()) {
                 this.join(2000);
@@ -609,26 +685,26 @@ public class Controlador extends Thread {
                 }
             }
         } catch (InterruptedException e) {
-            System.err.println("Interrupción durante el reset");
             Thread.currentThread().interrupt();
         }
 
-        // Limpiar estructuras de datos
         this.ram.clear();
         this.ram.addAll(Collections.nCopies(TAMAÑO_RAM, 0));
+        this.swap.clear();
+        this.swap.addAll(Collections.nCopies(swapLimitado ? tamaño_swap : 512, 0)); // MODIFICADO: Respetar configuración
         this.procesosListos.clear();
         this.procesosEnSwap.clear();
+        this.procesosEnColaEspera.clear();
         this.cores.clear();
         this.procesosPendientesDeLlegada.clear();
         this.procesosTerminados.clear();
         this.listaDireccionesProcesMem.clear();
-        this.memoriaAProceso.clear(); // Limpiar mapeo de memoria a proceso
-        
-        // Limpiar semáforo (liberar todos los permisos)
-        forkSemaphore.drainPermits();
-        forkSemaphore.release(10); // Restaurar permisos iniciales
+        this.memoriaAProceso.clear();
+        this.swapAProceso.clear();
 
-        // Reinicializar variables
+        forkSemaphore.drainPermits();
+        forkSemaphore.release(10);
+
         this.tiempoDeLlegadaProm = 0;
         this.tiempoDeEsperaProm = 0;
         this.tiempoDeRetornoProm = 0;
@@ -639,7 +715,6 @@ public class Controlador extends Thread {
         this.pausado = false;
         this.algoritmo = null;
 
-        // Crear nuevos cores
         for (int i = 1; i <= NUMERO_CORES; i++) {
             Core core = new Core(i, this);
             cores.add(core);
@@ -648,7 +723,5 @@ public class Controlador extends Thread {
 
         Proceso.resetNextId();
         instance = null;
-
-        System.out.println("=== RESET DEL CONTROLADOR COMPLETADO ===");
     }
 }

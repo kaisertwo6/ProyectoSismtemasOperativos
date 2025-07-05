@@ -1,12 +1,16 @@
 package com.example.demo;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 
 public class InicioController {
     @FXML private Button btnAñadir;
@@ -15,26 +19,36 @@ public class InicioController {
     @FXML private Button btnRandom;
     @FXML private Button btnRandomGrande;
     @FXML private Button btnEscenarioExtremo;
-    @FXML private Button btnProcesosConHijos; // NUEVO BOTÓN
+    @FXML private Button btnProcesosConHijos;
+    @FXML private Button btnProgramasGrandes;
+    @FXML private Button btnEscenarioQuantumBajo;
+    @FXML private Button btnSwapLimitado;
     @FXML private Button btnSJF;
     @FXML private TextField txtDuracion;
     @FXML private TextField txtSlot;
     @FXML private TextField txtTiempo;
     @FXML private TextField txtQuantum;
+    @FXML private TextField txtNombrePrograma;
+    @FXML private Label lblEstado;
+
+    // NUEVOS: Controles para configurar SWAP
+    @FXML private ToggleButton toggleSwapLimitado;
+    @FXML private Slider sliderTamañoSwap;
+    @FXML private Label lblTamañoSwap;
+    @FXML private Label lblEstadoSwap;
 
     Controlador controlador;
     HelloController controladorProcesos;
-
     boolean RR;
     boolean SJF;
 
+    private static final int TAMAÑO_MAXIMO_PROCESO = 100;
+
     @FXML
     public void initialize() {
-        // Limpiar instancia anterior del controlador
         try {
             Controlador instanciaAnterior = Controlador.getInstance();
             if (instanciaAnterior != null) {
-                System.out.println("Limpiando instancia anterior del controlador...");
                 instanciaAnterior.reset();
             }
         } catch (Exception e) {
@@ -42,16 +56,86 @@ public class InicioController {
         }
 
         this.controlador = Controlador.getInstance();
-
-        // Resetear variables de selección de algoritmo
         this.RR = false;
         this.SJF = false;
         this.controladorProcesos = null;
 
-        System.out.println("InicioController inicializado correctamente");
+        // Configurar controles de SWAP
+        configurarControlesSwap();
+        actualizarEstilosAlgoritmos();
+        mostrarAviso("Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos.", "#2c3e50");
     }
 
-    // Añadir proceso individual
+    private void configurarControlesSwap() {
+        // Configurar toggle por defecto (SWAP limitado activado)
+        toggleSwapLimitado.setSelected(true);
+
+        // Configurar slider (rango 256-1024 slots)
+        sliderTamañoSwap.setMin(256);
+        sliderTamañoSwap.setMax(1024);
+        sliderTamañoSwap.setValue(512); // Valor por defecto
+
+        // Listener para el slider
+        sliderTamañoSwap.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int tamaño = newValue.intValue();
+            lblTamañoSwap.setText(tamaño + " slots");
+            actualizarConfiguracionSwap();
+        });
+
+        // Listener para el toggle
+        toggleSwapLimitado.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            actualizarConfiguracionSwap();
+        });
+
+        // Configuración inicial
+        lblTamañoSwap.setText("512 slots");
+        actualizarConfiguracionSwap();
+    }
+
+    private void actualizarConfiguracionSwap() {
+        boolean limitado = toggleSwapLimitado.isSelected();
+        int tamaño = (int) sliderTamañoSwap.getValue();
+
+        // Actualizar interfaz
+        sliderTamañoSwap.setDisable(!limitado);
+        lblTamañoSwap.setDisable(!limitado);
+
+        if (limitado) {
+            toggleSwapLimitado.setText("LIMITADO");
+            toggleSwapLimitado.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;");
+            lblEstadoSwap.setText("SWAP Limitado: " + tamaño + " slots");
+            lblEstadoSwap.setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
+        } else {
+            toggleSwapLimitado.setText("ILIMITADO");
+            toggleSwapLimitado.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+            lblEstadoSwap.setText("SWAP Ilimitado (crece automáticamente)");
+            lblEstadoSwap.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+        }
+
+        // Configurar controlador
+        if (controlador != null) {
+            controlador.configurarSwap(limitado, tamaño);
+        }
+    }
+
+    private void mostrarAviso(String mensaje, String color) {
+        lblEstado.setText("✓ " + mensaje);
+        lblEstado.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+    }
+
+    private void actualizarEstilosAlgoritmos() {
+        if (RR) {
+            btnRR.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 15;");
+            btnSJF.setStyle("-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;");
+        } else if (SJF) {
+            btnSJF.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 15;");
+            btnRR.setStyle("-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;");
+        } else {
+            btnRR.setStyle("-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;");
+            btnSJF.setStyle("-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;");
+        }
+    }
+
     @FXML
     void añadirProceso(ActionEvent event) {
         try {
@@ -59,150 +143,194 @@ public class InicioController {
             int tamanioSlot = Integer.parseInt(txtSlot.getText());
             int tiempoLlegada = Integer.parseInt(txtTiempo.getText());
 
-            Proceso procesoAux = new Proceso(duracion, tiempoLlegada, tamanioSlot);
-            controlador.agregarProcesoAlSistema(procesoAux);
+            if (txtNombrePrograma.getText() != null && !txtNombrePrograma.getText().trim().isEmpty()) {
+                String nombrePrograma = txtNombrePrograma.getText().trim();
+                agregarPrograma(nombrePrograma, duracion, tiempoLlegada, tamanioSlot);
+                mostrarAviso("Programa '" + nombrePrograma + "' agregado exitosamente.", "#27ae60");
+            } else {
+                Proceso procesoAux = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+                controlador.agregarProcesoAlSistema(procesoAux);
+                mostrarAviso("Proceso individual agregado (D:" + duracion + ", L:" + tiempoLlegada + ", T:" + tamanioSlot + ").", "#27ae60");
+            }
+
+            txtDuracion.clear();
+            txtSlot.clear();
+            txtTiempo.clear();
+            txtNombrePrograma.clear();
+
         } catch (NumberFormatException e) {
-            System.err.println("Error: Asegúrate de introducir números válidos en los campos de texto.");
+            mostrarAviso("Error: Introduce números válidos en todos los campos.", "#e74c3c");
         }
     }
 
-    // Crear procesos aleatorios normales
+    private void agregarPrograma(String nombrePrograma, int duracion, int tiempoLlegada, int tamanioPrograma) {
+        if (tamanioPrograma <= TAMAÑO_MAXIMO_PROCESO) {
+            Proceso programa = new Proceso(duracion, tiempoLlegada, tamanioPrograma);
+            controlador.agregarProcesoAlSistema(programa);
+        } else {
+            Proceso programaPadre = new Proceso(nombrePrograma, duracion, tiempoLlegada, tamanioPrograma);
+            List<Proceso> procesosHijos = programaPadre.dividirPrograma(TAMAÑO_MAXIMO_PROCESO);
+
+            controlador.agregarProcesoAlSistema(programaPadre);
+
+            for (Proceso procesoHijo : procesosHijos) {
+                controlador.agregarProcesoAlSistema(procesoHijo);
+            }
+        }
+    }
+
     @FXML
     void crearRandom(ActionEvent event) {
         Random random = new Random();
-        int cantidadProcesos = random.nextInt(6) + 3; // 3-8 procesos
-
-        System.out.println("=== GENERANDO " + cantidadProcesos + " PROCESOS ALEATORIOS PEQUEÑOS ===");
+        int cantidadProcesos = random.nextInt(6) + 3;
 
         for (int i = 0; i < cantidadProcesos; i++) {
-            int duracion = random.nextInt(15) + 1;        // 1-15 segundos
-            int tiempoLlegada = random.nextInt(20);       // 0-19 segundos
-            int tamanioSlot = random.nextInt(50) + 10;    // 10-59 slots
+            int duracion = random.nextInt(15) + 1;
+            int tiempoLlegada = random.nextInt(20);
+            int tamanioSlot = random.nextInt(50) + 10;
 
             Proceso procesoAleatorio = new Proceso(duracion, tiempoLlegada, tamanioSlot);
             controlador.agregarProcesoAlSistema(procesoAleatorio);
-
-            System.out.println("Proceso generado: " + procesoAleatorio.getId() +
-                    " - Duración: " + duracion +
-                    ", Llegada: " + tiempoLlegada +
-                    ", Tamaño: " + tamanioSlot);
         }
 
-        System.out.println("=== " + cantidadProcesos + " PROCESOS ALEATORIOS PEQUEÑOS CREADOS ===");
+        mostrarAviso(cantidadProcesos + " procesos aleatorios normales creados (10-59 slots cada uno).", "#3498db");
     }
 
-    // Crear procesos grandes para forzar SWAP
     @FXML
     void crearRandomGrande(ActionEvent event) {
         Random random = new Random();
-        int cantidadProcesos = random.nextInt(8) + 7; // 7-14 procesos
-
-        System.out.println("=== GENERANDO " + cantidadProcesos + " PROCESOS ALEATORIOS GRANDES (PARA SWAP) ===");
+        int cantidadProcesos = random.nextInt(8) + 7;
 
         for (int i = 0; i < cantidadProcesos; i++) {
-            int duracion = random.nextInt(20) + 5;        // 5-24 segundos
-            int tiempoLlegada = random.nextInt(15);       // 0-14 segundos
+            int duracion = random.nextInt(20) + 5;
+            int tiempoLlegada = random.nextInt(15);
 
-            // Tamaños grandes para forzar swapping
             int tamanioSlot;
             if (i < 3) {
-                tamanioSlot = random.nextInt(200) + 150;  // 150-349 slots
+                tamanioSlot = random.nextInt(200) + 150;
             } else if (i < 6) {
-                tamanioSlot = random.nextInt(150) + 80;   // 80-229 slots
+                tamanioSlot = random.nextInt(150) + 80;
             } else {
-                tamanioSlot = random.nextInt(100) + 50;   // 50-149 slots
+                tamanioSlot = random.nextInt(100) + 50;
             }
 
             Proceso procesoAleatorio = new Proceso(duracion, tiempoLlegada, tamanioSlot);
             controlador.agregarProcesoAlSistema(procesoAleatorio);
-
-            System.out.println("Proceso GRANDE generado: " + procesoAleatorio.getId() +
-                    " - Duración: " + duracion +
-                    ", Llegada: " + tiempoLlegada +
-                    ", Tamaño: " + tamanioSlot + " slots");
         }
 
-        System.out.println("=== " + cantidadProcesos + " PROCESOS GRANDES CREADOS ===");
-        System.out.println("RAM disponible: 1024 slots");
-
-        int memoriaTotal = controlador.getProcesosPendientesDeLlegada().stream()
-                .mapToInt(Proceso::getTamanioSlot)
-                .sum();
-
-        System.out.println("Memoria total requerida: " + memoriaTotal + " slots");
-        System.out.println("Exceso de memoria: " + (memoriaTotal - 1024) + " slots -> Irán a SWAP");
+        mostrarAviso(cantidadProcesos + " procesos grandes creados. Forzarán uso intensivo de SWAP.", "#e67e22");
     }
 
-    // Crear escenario extremo para swapping intensivo
     @FXML
     void crearEscenarioExtremo(ActionEvent event) {
-        System.out.println("=== CREANDO ESCENARIO EXTREMO DE SWAPPING ===");
-
-        // Procesos que lleguen casi al mismo tiempo y sean muy grandes
         for (int i = 0; i < 5; i++) {
-            int duracion = 15 + i * 2;                   // 15, 17, 19, 21, 23 segundos
-            int tiempoLlegada = i;                       // 0, 1, 2, 3, 4 segundos
-            int tamanioSlot = 250 + i * 50;              // 250, 300, 350, 400, 450 slots
+            int duracion = 15 + i * 2;
+            int tiempoLlegada = i;
+            int tamanioSlot = 250 + i * 50;
 
             Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
             controlador.agregarProcesoAlSistema(proceso);
-
-            System.out.println("Proceso EXTREMO: " + proceso.getId() +
-                    " - Duración: " + duracion + ", Llegada: " + tiempoLlegada +
-                    ", Tamaño: " + tamanioSlot + " slots");
         }
 
-        // Procesos más pequeños que compitan por memoria
         for (int i = 5; i < 10; i++) {
-            int duracion = 8 + i;                        // 13, 14, 15, 16, 17 segundos
-            int tiempoLlegada = 3 + i;                   // 8, 9, 10, 11, 12 segundos
-            int tamanioSlot = 80 + i * 10;               // 130, 140, 150, 160, 170 slots
+            int duracion = 8 + i;
+            int tiempoLlegada = 3 + i;
+            int tamanioSlot = 80 + i * 10;
 
             Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
             controlador.agregarProcesoAlSistema(proceso);
-
-            System.out.println("Proceso COMPETIDOR: " + proceso.getId() +
-                    " - Duración: " + duracion + ", Llegada: " + tiempoLlegada +
-                    ", Tamaño: " + tamanioSlot + " slots");
         }
 
-        System.out.println("=== ESCENARIO EXTREMO CREADO ===");
-        System.out.println("Total memoria requerida: ~2750 slots para RAM de 1024 slots");
-        System.out.println("Resultado esperado: Swapping intensivo y competencia por memoria");
+        mostrarAviso("Escenario extremo creado: 10 procesos para swapping intensivo.", "#e74c3c");
     }
-    
-    // NUEVA FUNCIONALIDAD: Crear procesos que pueden generar hijos
+
     @FXML
     void crearProcesosConHijos(ActionEvent event) {
-        System.out.println("=== CREANDO PROCESOS CON CAPACIDAD DE TENER HIJOS ===");
-
-        // Crear 3-4 procesos padre que pueden generar hijos
         Random random = new Random();
-        int cantidadProcesos = 3 + random.nextInt(2); // 3-4 procesos
+        int cantidadProcesos = 3 + random.nextInt(2);
 
         for (int i = 0; i < cantidadProcesos; i++) {
-            int duracion = 8 + random.nextInt(7);      // 8-14 segundos (duración suficiente para crear hijos)
-            int tiempoLlegada = i * 2;                 // 0, 2, 4, 6 segundos (escalonado)
-            int tamanioSlot = 40 + random.nextInt(40); // 40-79 slots (tamaño moderado)
+            int duracion = 8 + random.nextInt(7);
+            int tiempoLlegada = i * 2;
+            int tamanioSlot = 40 + random.nextInt(40);
 
             Proceso procesoPadre = new Proceso(duracion, tiempoLlegada, tamanioSlot);
-            
-            // HABILITAR la capacidad de crear hijos
             procesoPadre.habilitarCreacionHijos();
-            
             controlador.agregarProcesoAlSistema(procesoPadre);
-
-            System.out.println("Proceso PADRE creado: " + procesoPadre.getId() +
-                    " - Duración: " + duracion + ", Llegada: " + tiempoLlegada +
-                    ", Tamaño: " + tamanioSlot + " slots [PUEDE CREAR HIJOS]");
         }
 
-        System.out.println("=== PROCESOS CON CAPACIDAD DE HIJOS CREADOS ===");
-        System.out.println("Durante la ejecución, estos procesos tendrán una probabilidad de crear procesos hijos (FORK)");
-        System.out.println("Los procesos hijos aparecerán con nombres como 'Proceso X.H1', 'Proceso X.H2', etc.");
+        mostrarAviso(cantidadProcesos + " procesos padre creados. Podrán generar hijos durante ejecución.", "#9b59b6");
     }
 
-    // Iniciar simulación
+    @FXML
+    void crearProgramasGrandes(ActionEvent event) {
+        String[] nombresPrograma = {"Word", "Chrome", "Photoshop", "LeagueOfLegends"};
+        Random random = new Random();
+
+        for (int i = 0; i < nombresPrograma.length; i++) {
+            int duracion = 12 + random.nextInt(8);
+            int tiempoLlegada = i * 3;
+            int tamanioPrograma = 250 + random.nextInt(300);
+
+            agregarPrograma(nombresPrograma[i], duracion, tiempoLlegada, tamanioPrograma);
+        }
+
+        mostrarAviso("4 programas grandes creados. Se dividirán automáticamente en procesos pequeños.", "#2c3e50");
+    }
+
+    @FXML
+    void crearEscenarioQuantumBajo(ActionEvent event) {
+        if (txtQuantum.getText().isEmpty()) {
+            txtQuantum.setText("2");
+        }
+
+        Random random = new Random();
+
+        for (int i = 0; i < 8; i++) {
+            int duracion = 10 + random.nextInt(6);
+            int tiempoLlegada = random.nextInt(5);
+            int tamanioSlot = 30 + random.nextInt(20);
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+        }
+
+        mostrarAviso("8 procesos largos creados. Usa quantum=2 para ver muchos cambios de contexto.", "#16a085");
+    }
+
+    @FXML
+    void crearSwapLimitado(ActionEvent event) {
+        Random random = new Random();
+        int memoriaTotal = 0;
+
+        for (int i = 0; i < 15; i++) {
+            int duracion = 8 + random.nextInt(12);
+            int tiempoLlegada = i;
+
+            int tamanioSlot;
+            if (i < 5) {
+                tamanioSlot = 200;
+            } else if (i < 10) {
+                tamanioSlot = 100;
+            } else {
+                tamanioSlot = 80;
+            }
+
+            memoriaTotal += tamanioSlot;
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+        }
+
+        if (toggleSwapLimitado.isSelected()) {
+            int tamanioSwap = (int) sliderTamañoSwap.getValue();
+            int totalDisponible = 1024 + tamanioSwap;
+            mostrarAviso("15 procesos creados (" + memoriaTotal + " slots). Disponible=" + totalDisponible + ", exceso irá a cola.", "#8e44ad");
+        } else {
+            mostrarAviso("15 procesos creados (" + memoriaTotal + " slots). SWAP ilimitado se expandirá automáticamente.", "#27ae60");
+        }
+    }
+
     @FXML
     void iniciarSimulacion(ActionEvent event) throws IOException {
         TipoAlgoritmo tipo = null;
@@ -213,9 +341,15 @@ public class InicioController {
         }
 
         if (tipo == null) {
-            System.err.println("Error: Debes seleccionar un algoritmo (RR o SJF) antes de iniciar la simulación.");
+            mostrarAviso("ERROR: Debes seleccionar un algoritmo (Round Robin o SJF).", "#e74c3c");
             return;
         }
+
+        if (controlador.getProcesosPendientesDeLlegada().isEmpty()) {
+            mostrarAviso("ERROR: Agrega al menos un proceso antes de iniciar la simulación.", "#e74c3c");
+            return;
+        }
+
         controlador.setAlgoritmo(tipo);
 
         HelloApplication.cambiarSecenaProceso();
@@ -224,43 +358,36 @@ public class InicioController {
         controlador.setRunning(true);
         if (!controlador.isAlive()) {
             controlador.start();
-        } else {
-            System.out.println("El hilo del Controlador de simulación ya está corriendo.");
         }
 
         if (controladorProcesos != null && !controladorProcesos.isAlive()) {
             controladorProcesos.start();
-        } else if (controladorProcesos == null) {
-            System.err.println("Error: La instancia de HelloController es nula después de cambiar la escena.");
-        } else {
-            System.out.println("El hilo de HelloController ya está corriendo.");
         }
     }
 
-    // Seleccionar algoritmo Round Robin
     @FXML
     void seleccionarRR(ActionEvent event) {
         this.RR = true;
         this.SJF = false;
-        System.out.println("Algoritmo seleccionado: Round Robin");
         int valor_Quantum = 4;
         try{
             valor_Quantum = Integer.parseInt(txtQuantum.getText());
-            if(valor_Quantum < 4){
-                System.out.println("Este valor no es valido para el Quantum, se ingresa el valor predeterminado");
-                valor_Quantum = 4;
+            if(valor_Quantum < 2){
+                valor_Quantum = 2;
             }
-        }catch(Exception e){
-            System.out.println("Lo que se ingreso no es valido como valor para el Quantum");
+        }catch(Exception e) {
+            valor_Quantum = 4;
         }
         controlador.setQuantum(valor_Quantum);
+        actualizarEstilosAlgoritmos();
+        mostrarAviso("Algoritmo Round Robin seleccionado con quantum=" + valor_Quantum + ".", "#2980b9");
     }
 
-    // Seleccionar algoritmo Shortest Job First
     @FXML
     void seleccionarSJF(ActionEvent event) {
         this.RR = false;
         this.SJF = true;
-        System.out.println("Algoritmo seleccionado: Shortest Job First");
+        actualizarEstilosAlgoritmos();
+        mostrarAviso("Algoritmo Shortest Job First (SJF) seleccionado.", "#2980b9");
     }
 }

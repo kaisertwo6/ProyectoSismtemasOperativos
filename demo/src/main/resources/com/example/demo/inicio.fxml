@@ -1,26 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="720.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
+<VBox prefHeight="720.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
     <children>
         <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="720.0" prefWidth="1125.0" VBox.vgrow="ALWAYS">
             <children>
+                <!-- Label para avisos de estado -->
+                <Label fx:id="lblEstado" layoutX="50.0" layoutY="25.0" prefHeight="25.0" prefWidth="700.0" text="✓ Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos." textFill="#2c3e50" wrapText="true">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Label>
+
+                <!-- NUEVA SECCIÓN: Configuración de SWAP -->
+                <Text layoutX="50.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CONFIGURACIÓN SWAP:" wrappingWidth="200.0">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Text>
+
+                <!-- Toggle Button para SWAP Limitado/Ilimitado -->
+                <ToggleButton fx:id="toggleSwapLimitado" layoutX="260.0" layoutY="60.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="120.0" selected="true" text="LIMITADO">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </ToggleButton>
+
+                <!-- Slider para tamaño de SWAP -->
+                <Text layoutX="400.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño:">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Text>
+                <Slider fx:id="sliderTamañoSwap" layoutX="460.0" layoutY="65.0" prefWidth="150.0" />
+                <Label fx:id="lblTamañoSwap" layoutX="620.0" layoutY="70.0" text="512 slots">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </Label>
+
+                <!-- Estado actual de SWAP -->
+                <Label fx:id="lblEstadoSwap" layoutX="260.0" layoutY="100.0" prefWidth="400.0" text="SWAP Limitado: 512 slots" textFill="#e67e22">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Label>
+
                 <Text layoutX="187.0" layoutY="203.0" strokeType="OUTSIDE" strokeWidth="0.0" text="AÑADIR PROCESO:" wrappingWidth="113.39999999999986">
                     <font>
                         <Font name="System Bold" size="22.0" />
                     </font>
                 </Text>
-                <Text layoutX="410.0" layoutY="290.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de llegada:" textAlignment="RIGHT" wrappingWidth="152.53668212890625">
+
+                <Text layoutX="400.0" layoutY="130.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nombre programa:" textAlignment="RIGHT" wrappingWidth="163.336669921875">
                     <font>
                         <Font size="18.0" />
                     </font>
                 </Text>
+                <TextField fx:id="txtNombrePrograma" layoutX="610.0" layoutY="110.0" promptText="(Opcional - para programas grandes)" style="-fx-border-color: #9b59b6;" />
+
                 <Text layoutX="430.0" layoutY="170.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño de Slot:" textAlignment="RIGHT" wrappingWidth="133.336669921875">
                     <font>
                         <Font size="18.0" />
@@ -31,75 +78,99 @@
                         <Font size="18.0" />
                     </font>
                 </Text>
+                <Text layoutX="410.0" layoutY="290.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de llegada:" textAlignment="RIGHT" wrappingWidth="152.53668212890625">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Text>
+
                 <TextField fx:id="txtSlot" layoutX="610.0" layoutY="150.0" style="-fx-border-color: #5284FF;" />
                 <TextField fx:id="txtDuracion" layoutX="610.0" layoutY="210.0" style="-fx-border-color: #5284FF;" />
+                <TextField fx:id="txtTiempo" layoutX="610.0" layoutY="270.0" style="-fx-border-color: #5284FF;" />
 
-                <!-- BOTONES DE GENERACIÓN MEJORADOS -->
                 <Button fx:id="btnRandom" layoutX="831.0" layoutY="120.0" mnemonicParsing="false" onAction="#crearRandom" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="RANDOM NORMAL" textFill="WHITE">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Button>
 
-                <!-- NUEVO: Botón para procesos grandes -->
                 <Button fx:id="btnRandomGrande" layoutX="831.0" layoutY="165.0" mnemonicParsing="false" onAction="#crearRandomGrande" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #e67e22; -fx-background-radius: 15;" text="RANDOM GRANDE" textFill="WHITE">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Button>
 
-                <!-- NUEVO: Botón para escenario extremo -->
                 <Button fx:id="btnEscenarioExtremo" layoutX="831.0" layoutY="210.0" mnemonicParsing="false" onAction="#crearEscenarioExtremo" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #e74c3c; -fx-background-radius: 15;" text="ESCENARIO EXTREMO" textFill="WHITE" wrapText="true">
                     <font>
                         <Font size="12.0" />
                     </font>
                 </Button>
-                
-                <!-- NUEVO: Botón para procesos con hijos -->
+
                 <Button fx:id="btnProcesosConHijos" layoutX="831.0" layoutY="255.0" mnemonicParsing="false" onAction="#crearProcesosConHijos" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #9b59b6; -fx-background-radius: 15;" text="PROCESOS CON HIJOS" textFill="WHITE" wrapText="true">
                     <font>
                         <Font size="11.0" />
                     </font>
                 </Button>
 
-                <TextField fx:id="txtTiempo" layoutX="610.0" layoutY="270.0" style="-fx-border-color: #5284FF;" />
-                <Text layoutX="483.5" layoutY="74.0" strokeType="OUTSIDE" strokeWidth="0.0" text="INICIO" wrappingWidth="113.0">
+                <Button fx:id="btnProgramasGrandes" layoutX="831.0" layoutY="300.0" mnemonicParsing="false" onAction="#crearProgramasGrandes" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #2c3e50; -fx-background-radius: 15;" text="PROGRAMAS GRANDES" textFill="WHITE" wrapText="true">
                     <font>
-                        <Font name="System Bold" size="36.0" />
+                        <Font size="11.0" />
                     </font>
-                </Text>
-                <Text layoutY="390.0" strokeType="OUTSIDE" strokeWidth="0.0" text="................................................................................................................................................" textAlignment="RIGHT" wrappingWidth="1125.0">
+                </Button>
+
+                <Button fx:id="btnEscenarioQuantumBajo" layoutX="831.0" layoutY="345.0" mnemonicParsing="false" onAction="#crearEscenarioQuantumBajo" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #16a085; -fx-background-radius: 15;" text="QUANTUM BAJO" textFill="WHITE" wrapText="true">
                     <font>
-                        <Font size="36.0" />
+                        <Font size="12.0" />
                     </font>
-                </Text>
-                <Text layoutX="180.0" layoutY="531.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ALGORITMOS:" wrappingWidth="151.800048828125">
+                </Button>
+
+                <Button fx:id="btnSwapLimitado" layoutX="831.0" layoutY="390.0" mnemonicParsing="false" onAction="#crearSwapLimitado" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #8e44ad; -fx-background-radius: 15;" text="SWAP LIMITADO" textFill="WHITE" wrapText="true">
                     <font>
-                        <Font name="System Bold" size="22.0" />
+                        <Font size="12.0" />
                     </font>
-                </Text>
+                </Button>
+
                 <Button fx:id="btnAñadir" layoutX="610.0" layoutY="333.0" mnemonicParsing="false" onAction="#añadirProceso" prefHeight="26.0" prefWidth="90.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="AÑADIR">
                     <font>
                         <Font size="18.0" />
                     </font>
                 </Button>
-                <Button fx:id="btnRR" layoutX="463.0" layoutY="503.0" mnemonicParsing="false" onAction="#seleccionarRR" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="ROUND ROBIN">
+
+                <Text layoutX="599.0" layoutY="52.0" strokeType="OUTSIDE" strokeWidth="0.0" text="INICIO" wrappingWidth="113.0">
                     <font>
-                        <Font size="18.0" />
+                        <Font name="System Bold" size="36.0" />
                     </font>
-                </Button>
-                <Button fx:id="btnInicio" layoutX="826.0" layoutY="638.0" mnemonicParsing="false" onAction="#iniciarSimulacion" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: #280EAD; -fx-background-radius: 0;" text="INICIAR SIMULACION" textFill="WHITE">
+                </Text>
+                <Text layoutY="470.0" strokeType="OUTSIDE" strokeWidth="0.0" text="................................................................................................................................................" textAlignment="RIGHT" wrappingWidth="1125.0">
                     <font>
-                        <Font size="18.0" />
+                        <Font size="36.0" />
                     </font>
-                </Button>
-                <Button fx:id="btnSJF" layoutX="678.0" layoutY="503.0" mnemonicParsing="false" onAction="#seleccionarSJF" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="SJF">
+                </Text>
+
+                <Text layoutX="180.0" layoutY="531.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ALGORITMOS:" wrappingWidth="151.800048828125">
+                    <font>
+                        <Font name="System Bold" size="22.0" />
+                    </font>
+                </Text>
+
+                <Button fx:id="btnRR" layoutX="463.0" layoutY="503.0" mnemonicParsing="false" onAction="#seleccionarRR" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;" text="ROUND ROBIN">
                     <font>
                         <Font size="18.0" />
                     </font>
                 </Button>
 
-                <!-- NUEVAS DESCRIPCIONES -->
+                <Button fx:id="btnInicio" layoutX="826.0" layoutY="638.0" mnemonicParsing="false" onAction="#iniciarSimulacion" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: #280EAD; -fx-background-radius: 0;" text="INICIAR SIMULACION" textFill="WHITE">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnSJF" layoutX="678.0" layoutY="503.0" mnemonicParsing="false" onAction="#seleccionarSJF" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;" text="SJF">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Button>
+
                 <Text fill="#666666" layoutX="1000.0" layoutY="137.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos pequeños">
                     <font>
                         <Font size="12.0" />
@@ -120,7 +191,23 @@
                         <Font name="System Bold" size="12.0" />
                     </font>
                 </Text>
-            <TextField fx:id="txtQuantum" layoutX="462.0" layoutY="554.0" prefHeight="27.0" prefWidth="150.0" promptText="Quantum (4)" style="-fx-border-color: #5284FF;" />
+                <Text fill="#2c3e50" layoutX="1000.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="División automática">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Text>
+                <Text fill="#16a085" layoutX="1000.0" layoutY="362.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Muchos cambios contexto">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Text>
+                <Text fill="#8e44ad" layoutX="1000.0" layoutY="407.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Cola de espera">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Text>
+
+                <TextField fx:id="txtQuantum" layoutX="462.0" layoutY="554.0" prefHeight="27.0" prefWidth="150.0" promptText="Quantum (4)" style="-fx-border-color: #5284FF;" />
             </children>
         </AnchorPane>
     </children>

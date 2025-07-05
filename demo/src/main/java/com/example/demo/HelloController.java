@@ -34,13 +34,11 @@ public class HelloController extends Thread {
     @FXML private Label labelQuantumValor;
     @FXML private AnchorPane panelQuantum;
 
-    // Botones de velocidad
     @FXML private Button btnVelocidadX1;
     @FXML private Button btnVelocidadX2;
     @FXML private Button btnVelocidadX5;
     @FXML private Button btnVelocidadX10;
 
-    // Tablas de la interfaz
     @FXML private TableView<CoreInfo> tablaNucleos;
     @FXML private TableColumn<CoreInfo, String> columnaCoreId;
     @FXML private TableColumn<CoreInfo, String> columnaProceso;
@@ -61,7 +59,6 @@ public class HelloController extends Thread {
     @FXML private TableColumn<SwapInfo, String> columnaProcesoSwap;
     @FXML private TableColumn<SwapInfo, String> columnaDireccionesSwap;
 
-    // Listas observables para las tablas
     private ObservableList<CoreInfo> listaNucleos;
     private ObservableList<MemoriaInfo> listaMemoria;
     private ObservableList<ProcesoInfo> listaProcesos;
@@ -73,9 +70,6 @@ public class HelloController extends Thread {
     private int velocidadSimulacion = 1000;
 
     public HelloController() {
-        if (instance != null && instance != this) {
-            System.err.println("ADVERTENCIA: Constructor de HelloController llamado de nuevo. Posible doble instancia.");
-        }
         instance = this;
         procesosConocidos = new HashSet<>();
     }
@@ -86,9 +80,6 @@ public class HelloController extends Thread {
 
     @FXML
     public void initialize() {
-        if (instance != null && instance != this) {
-            System.err.println("ADVERTENCIA: Se está inicializando una segunda instancia de HelloController. El Singleton debería ser único.");
-        }
         instance = this;
 
         this.controlador = Controlador.getInstance();
@@ -132,23 +123,12 @@ public class HelloController extends Thread {
             controlador.setVelocidadSimulacion(nuevaVelocidad);
         }
 
-        // Resetear estilos de botones
         btnVelocidadX1.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50;");
         btnVelocidadX2.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50;");
         btnVelocidadX5.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50;");
         btnVelocidadX10.setStyle("-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50;");
 
-        // Activar botón seleccionado
         botonActivo.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        String velocidadTexto = "";
-        switch (nuevaVelocidad) {
-            case 1000: velocidadTexto = "1x"; break;
-            case 500: velocidadTexto = "2x"; break;
-            case 200: velocidadTexto = "5x"; break;
-            case 100: velocidadTexto = "10x"; break;
-        }
-        System.out.println("Velocidad cambiada a: " + velocidadTexto);
     }
 
     private void inicializarTablas() {
@@ -164,21 +144,17 @@ public class HelloController extends Thread {
     }
 
     private void configurarTablas() {
-        // Configurar tabla de núcleos
         columnaCoreId.setCellValueFactory(new PropertyValueFactory<>("coreId"));
         columnaProceso.setCellValueFactory(new PropertyValueFactory<>("procesoId"));
         columnaEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
 
-        // Configurar tabla de memoria RAM
         columnaDireccion.setCellValueFactory(new PropertyValueFactory<>("direccion"));
         columnaProcesoId.setCellValueFactory(new PropertyValueFactory<>("procesoId"));
         columnaEstadoMemoria.setCellValueFactory(new PropertyValueFactory<>("estado"));
         columnaFragmentacion.setCellValueFactory(new PropertyValueFactory<>("fragmentacion"));
 
-        // Configurar tabla de procesos
         columnaProcesoInfo.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
 
-        // Configurar columna de estado con círculos de colores
         columnaEstadoProceso.setCellFactory(column -> {
             return new TableCell<ProcesoInfo, String>() {
                 private final Circle circulo = new Circle(6);
@@ -239,7 +215,6 @@ public class HelloController extends Thread {
             };
         });
 
-        // Configurar columna de botones "Ver"
         columnaAcciones.setCellFactory(column -> {
             return new TableCell<ProcesoInfo, Button>() {
                 private final Button btn = new Button("Ver");
@@ -264,7 +239,6 @@ public class HelloController extends Thread {
             };
         });
 
-        // Configurar tabla de swap
         columnaProcesoSwap.setCellValueFactory(new PropertyValueFactory<>("procesoId"));
         columnaDireccionesSwap.setCellValueFactory(new PropertyValueFactory<>("direcciones"));
     }
@@ -301,7 +275,6 @@ public class HelloController extends Thread {
         });
     }
 
-    // Actualizar vista de memoria RAM
     public void actualizarMemoriaRAM() {
         if (controlador == null) return;
 
@@ -312,7 +285,6 @@ public class HelloController extends Thread {
             Map<String, List<Integer>> procesosBloques = new HashMap<>();
             Map<String, EstadoProceso> estadosProcesos = new HashMap<>();
 
-            // Obtener estados de procesos activos usando el ID completo
             for (Core core : controlador.cores) {
                 if (core.isOcupado() && core.getProcesoEjecucion() != null) {
                     String procesoId = core.getProcesoEjecucion().getId();
@@ -320,13 +292,11 @@ public class HelloController extends Thread {
                 }
             }
 
-            // Procesos en RAM (cola de listos)
             for (Proceso proceso : controlador.getProcesosListos()) {
                 String procesoId = proceso.getId();
                 estadosProcesos.put(procesoId, EstadoProceso.ESPERA);
             }
 
-            // Usar el nuevo mapeo de memoria a proceso
             for (int i = 0; i < ram.size(); i++) {
                 if (memoriaAProceso.containsKey(i)) {
                     String procesoId = memoriaAProceso.get(i);
@@ -336,7 +306,6 @@ public class HelloController extends Thread {
 
             listaMemoria.clear();
 
-            // Mostrar procesos activos como rangos
             for (Map.Entry<String, List<Integer>> entry : procesosBloques.entrySet()) {
                 List<Integer> direcciones = entry.getValue();
                 if (!direcciones.isEmpty()) {
@@ -358,7 +327,6 @@ public class HelloController extends Thread {
                             estadoTexto = "Ocupado";
                     }
 
-                    // Mostrar ID completo para procesos hijos (ej: "Proceso 1.H1")
                     String displayId = procesoId.contains(".H") ? procesoId : procesoId.replace("Proceso ", "P");
 
                     listaMemoria.add(new MemoriaInfo(
@@ -370,7 +338,6 @@ public class HelloController extends Thread {
                 }
             }
 
-            // Mostrar memoria libre total
             int memoriaLibre = Collections.frequency(ram, 0);
             if (memoriaLibre > 0) {
                 listaMemoria.add(new MemoriaInfo(
@@ -385,7 +352,6 @@ public class HelloController extends Thread {
         });
     }
 
-    // Actualizar estado de los núcleos
     public void actualizarNucleos() {
         if (controlador == null) return;
 
@@ -409,7 +375,6 @@ public class HelloController extends Thread {
         });
     }
 
-    // Actualizar cola de procesos
     public void actualizarColaDeprocesos() {
         if (controlador == null) return;
 
@@ -418,6 +383,7 @@ public class HelloController extends Thread {
             List<ProcesoInfo> procesosEnRamEspera = new ArrayList<>();
             List<ProcesoInfo> procesosEnSwap = new ArrayList<>();
             List<ProcesoInfo> procesosPendientes = new ArrayList<>();
+            List<ProcesoInfo> procesosEnColaEspera = new ArrayList<>(); // NUEVO
             List<ProcesoInfo> procesosTerminados = new ArrayList<>();
 
             Map<String, ProcesoInfo> procesosEnTabla = new HashMap<>();
@@ -425,11 +391,9 @@ public class HelloController extends Thread {
                 procesosEnTabla.put(procesoInfo.getProceso().getId(), procesoInfo);
             }
 
-            // OBTENER TIEMPO ACTUAL PARA VERIFICAR
             int tiempoActual = controlador.getTiempoActual();
-            System.out.println("=== ACTUALIZANDO ESTADOS - Tiempo actual: " + tiempoActual + " ===");
 
-            // 1. Procesos EJECUTANDO
+            // Procesos ejecutando
             for (Core core : controlador.cores) {
                 if (core.isOcupado() && core.getProcesoEjecucion() != null) {
                     Proceso procesoEjecutandose = core.getProcesoEjecucion();
@@ -451,37 +415,30 @@ public class HelloController extends Thread {
                 }
             }
 
-            // 2. TODOS LOS DEMÁS PROCESOS - Clasificar correctamente por tiempo de llegada
             Set<String> procesosYaEjecutando = procesosEjecutandose.stream()
                     .map(info -> info.getProceso().getId())
                     .collect(Collectors.toSet());
 
-            // Obtener todos los procesos del sistema
             Set<Proceso> todosProcesos = new HashSet<>();
             todosProcesos.addAll(controlador.getProcesosPendientesDeLlegada());
             todosProcesos.addAll(controlador.getProcesosListos());
             todosProcesos.addAll(controlador.getProcesosEnSwap());
+            todosProcesos.addAll(controlador.getProcesosEnColaEspera()); // NUEVO
             todosProcesos.addAll(controlador.getProcesosTerminados());
 
             for (Proceso proceso : todosProcesos) {
-                // Saltar si ya está ejecutando
                 if (procesosYaEjecutando.contains(proceso.getId())) {
                     continue;
                 }
 
                 procesosConocidos.add(proceso.getId());
 
-                // VERIFICAR TIEMPO DE LLEGADA VS TIEMPO ACTUAL
                 boolean yaLlego = proceso.getTiempoDeLlegada() <= tiempoActual;
-
-                System.out.println("Proceso " + proceso.getId() + " - Llegada: " + proceso.getTiempoDeLlegada() +
-                        ", Actual: " + tiempoActual + ", Ya llegó: " + yaLlego + ", Estado: " + proceso.getEstado());
 
                 ProcesoInfo info;
                 String descripcionLimpia;
 
                 if (proceso.getEstado() == EstadoProceso.TERMINADO) {
-                    // TERMINADO
                     descripcionLimpia = proceso.getId() + " (TE:" +
                             proceso.getTiempoDeEspera() + ", TR:" + proceso.getTiempoDeRetorno() + ")";
 
@@ -496,7 +453,6 @@ public class HelloController extends Thread {
                     procesosTerminados.add(info);
 
                 } else if (!yaLlego) {
-                    // NO HA LLEGADO AÚN - FORZAR ESTADO PENDIENTE
                     descripcionLimpia = proceso.getId() + " (D:" +
                             proceso.getDuracion() + ", L:" + proceso.getTiempoDeLlegada() +
                             ", T:" + proceso.getTamanioSlot() + ")";
@@ -510,15 +466,11 @@ public class HelloController extends Thread {
                         info.setDescripcion(descripcionLimpia);
                     }
 
-                    // FORZAR ESTADO PENDIENTE TEMPORALMENTE PARA LA VISTA
                     proceso.setEstado(EstadoProceso.PENDIENTE);
                     procesosPendientes.add(info);
-                    System.out.println("  → CLASIFICADO COMO PENDIENTE");
 
                 } else {
-                    // YA LLEGÓ - Verificar dónde está realmente
                     if (controlador.getProcesosListos().contains(proceso)) {
-                        // EN RAM
                         descripcionLimpia = proceso.getId() + " (D:" +
                                 proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ")";
 
@@ -531,10 +483,8 @@ public class HelloController extends Thread {
                             info.setDescripcion(descripcionLimpia);
                         }
                         procesosEnRamEspera.add(info);
-                        System.out.println("  → CLASIFICADO COMO EN RAM");
 
                     } else if (controlador.getProcesosEnSwap().contains(proceso)) {
-                        // EN SWAP
                         descripcionLimpia = proceso.getId() + " (D:" +
                                 proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ")";
 
@@ -547,10 +497,23 @@ public class HelloController extends Thread {
                             info.setDescripcion(descripcionLimpia);
                         }
                         procesosEnSwap.add(info);
-                        System.out.println("  → CLASIFICADO COMO EN SWAP");
+
+                    } else if (controlador.getProcesosEnColaEspera().contains(proceso)) { // NUEVO
+                        descripcionLimpia = proceso.getId() + " (D:" +
+                                proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ") [COLA ESPERA]";
+
+                        if (procesosEnTabla.containsKey(proceso.getId())) {
+                            info = procesosEnTabla.get(proceso.getId());
+                            info.setProceso(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        } else {
+                            info = new ProcesoInfo(proceso);
+                            info.setDescripcion(descripcionLimpia);
+                        }
+                        proceso.setEstado(EstadoProceso.PENDIENTE);
+                        procesosEnColaEspera.add(info);
 
                     } else {
-                        // CASO EXTRAÑO - Llegó pero no está en ninguna cola
                         descripcionLimpia = proceso.getId() + " (D:" +
                                 proceso.getDuracion() + ", L:" + proceso.getTiempoDeLlegada() +
                                 ", T:" + proceso.getTamanioSlot() + ")";
@@ -565,39 +528,29 @@ public class HelloController extends Thread {
                         }
                         proceso.setEstado(EstadoProceso.PENDIENTE);
                         procesosPendientes.add(info);
-                        System.out.println("  → CLASIFICADO COMO PENDIENTE (caso extraño)");
                     }
                 }
             }
 
-            // Ordenar listas
             if (controlador.algoritmo == TipoAlgoritmo.SJF) {
                 procesosEnRamEspera.sort((p1, p2) -> Integer.compare(p1.getProceso().getDuracion(), p2.getProceso().getDuracion()));
             }
             procesosPendientes.sort((p1, p2) -> Integer.compare(p1.getProceso().getTiempoDeLlegada(), p2.getProceso().getTiempoDeLlegada()));
             procesosTerminados.sort((p1, p2) -> p1.getProceso().getId().compareTo(p2.getProceso().getId()));
 
-            // Construir lista final ordenada
             List<ProcesoInfo> procesosOrdenadosFinales = new ArrayList<>();
             procesosOrdenadosFinales.addAll(procesosEjecutandose);
             procesosOrdenadosFinales.addAll(procesosEnRamEspera);
             procesosOrdenadosFinales.addAll(procesosEnSwap);
+            procesosOrdenadosFinales.addAll(procesosEnColaEspera); // NUEVO
             procesosOrdenadosFinales.addAll(procesosPendientes);
             procesosOrdenadosFinales.addAll(procesosTerminados);
-
-            System.out.println("RESUMEN CLASIFICACIÓN:");
-            System.out.println("  Ejecutando: " + procesosEjecutandose.size());
-            System.out.println("  En RAM: " + procesosEnRamEspera.size());
-            System.out.println("  En SWAP: " + procesosEnSwap.size());
-            System.out.println("  Pendientes: " + procesosPendientes.size());
-            System.out.println("  Terminados: " + procesosTerminados.size());
 
             listaProcesos.setAll(procesosOrdenadosFinales);
             tablaProcesos.refresh();
         });
     }
 
-    // Mostrar detalles de un proceso en ventana emergente
     private void mostrarDetallesProceso(Proceso proceso) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("ver_proceso.fxml"));
@@ -612,11 +565,9 @@ public class HelloController extends Thread {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Error al abrir la ventana de detalles del proceso: " + e.getMessage());
         }
     }
 
-    // Actualizar tabla de SWAP
     public void actualizarSwap() {
         if (controlador == null) return;
 
@@ -624,10 +575,12 @@ public class HelloController extends Thread {
             listaSwap.clear();
 
             Queue<Proceso> procesosEnSwap = controlador.getProcesosEnSwap();
+            Queue<Proceso> procesosEnColaEspera = controlador.getProcesosEnColaEspera(); // NUEVO
 
-            if (procesosEnSwap.isEmpty()) {
+            if (procesosEnSwap.isEmpty() && procesosEnColaEspera.isEmpty()) {
                 listaSwap.add(new SwapInfo("💾 SWAP VACÍO", "Sin procesos en disco"));
             } else {
+                // Procesos en SWAP
                 for (Proceso proceso : procesosEnSwap) {
                     String procesoInfo = proceso.getId();
                     String tamanioInfo = "📦 " + proceso.getTamanioSlot() + " slots";
@@ -637,29 +590,50 @@ public class HelloController extends Thread {
                     listaSwap.add(new SwapInfo(procesoInfo, detalles));
                 }
 
+                // NUEVO: Procesos en cola de espera
+                for (Proceso proceso : procesosEnColaEspera) {
+                    String procesoInfo = "⏳ " + proceso.getId();
+                    String tamanioInfo = "📦 " + proceso.getTamanioSlot() + " slots";
+                    String duracionInfo = "⏱️ " + proceso.getDuracion() + "s";
+
+                    String detalles = tamanioInfo + " | " + duracionInfo + " [ESPERA]";
+                    listaSwap.add(new SwapInfo(procesoInfo, detalles));
+                }
+
+                // Estadísticas SWAP
+                int slotsSwapUsados = controlador.getTamañoSwap() - Collections.frequency(controlador.getSwap(), 0);
                 int totalSlots = procesosEnSwap.stream().mapToInt(Proceso::getTamanioSlot).sum();
                 listaSwap.add(new SwapInfo(
-                        "📊 TOTAL EN SWAP",
+                        "📊 SWAP: " + slotsSwapUsados + "/" + controlador.getTamañoSwap(),
                         procesosEnSwap.size() + " procesos | " + totalSlots + " slots"
                 ));
+
+                // NUEVO: Estadísticas cola de espera
+                if (!procesosEnColaEspera.isEmpty()) {
+                    int totalSlotsEspera = procesosEnColaEspera.stream().mapToInt(Proceso::getTamanioSlot).sum();
+                    listaSwap.add(new SwapInfo(
+                            "⏳ COLA ESPERA:",
+                            procesosEnColaEspera.size() + " procesos | " + totalSlotsEspera + " slots"
+                    ));
+                }
             }
 
             tablaSwap.refresh();
         });
     }
 
-    // Actualizar información general de la interfaz
     private void actualizarInformacionGeneral() {
         if (controlador == null) return;
 
         Platform.runLater(() -> {
             int tiempoActual = controlador.getTiempoActual();
             int procesosEnSwap = controlador.getProcesosEnSwap().size();
+            int procesosEnColaEspera = controlador.getProcesosEnColaEspera().size(); // NUEVO
             int procesosTerminados = controlador.getProcesosTerminados().size();
 
             String infoCompleta = String.format(
-                    "Tiempo: %d | SWAP: %d proc | Terminados: %d",
-                    tiempoActual, procesosEnSwap, procesosTerminados
+                    "Tiempo: %d | SWAP: %d | Cola: %d | Terminados: %d", // NUEVO: Incluir cola
+                    tiempoActual, procesosEnSwap, procesosEnColaEspera, procesosTerminados
             );
 
             labelTiempoActual.setText(infoCompleta);
@@ -667,11 +641,8 @@ public class HelloController extends Thread {
         });
     }
 
-    // Terminar simulación e ir a estadísticas
     @FXML
     void ActionInButtonTerminar(ActionEvent event) {
-        System.out.println("=== TERMINANDO SIMULACIÓN ===");
-
         if (controlador != null) {
             controlador.setRunning(false);
             controlador.setPausado(false);
@@ -688,15 +659,11 @@ public class HelloController extends Thread {
         try {
             irAEstadisticas();
         } catch (IOException e) {
-            System.err.println("Error al ir a estadísticas: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // Navegar a pantalla de estadísticas
     private void irAEstadisticas() throws IOException {
-        System.out.println("Navegando a pantalla de estadísticas...");
-
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("estadisticas.fxml"));
         Scene newScene = new Scene(fxmlLoader.load(), 1080, 720);
 
@@ -709,7 +676,6 @@ public class HelloController extends Thread {
         stage.setScene(newScene);
     }
 
-    // Pausar/reanudar simulación
     @FXML
     void ActionPausarSimulacion(ActionEvent event) {
         pausado = !pausado;
@@ -721,17 +687,14 @@ public class HelloController extends Thread {
 
         if (pausado) {
             botonPausar.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
-            System.out.println("=== SIMULACIÓN PAUSADA ===");
         } else {
             botonPausar.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;");
-            System.out.println("=== SIMULACIÓN REANUDADA ===");
         }
     }
 
     @Override
     public void run() {
         if (this.controlador == null) {
-            System.err.println("ERROR FATAL: 'controlador' es nulo en HelloController.run() ANTES del bucle. Saliendo.");
             return;
         }
 
@@ -757,7 +720,6 @@ public class HelloController extends Thread {
         }
     }
 
-    // Clases auxiliares para las tablas
     public static class CoreInfo {
         private String coreId;
         private String procesoId;
@@ -808,25 +770,23 @@ public class HelloController extends Thread {
             this.proceso = proceso;
             actualizarDescripcion();
         }
-        
+
         private void actualizarDescripcion() {
             StringBuilder desc = new StringBuilder();
             desc.append(proceso.getId());
-            
-            // Mostrar si es proceso hijo
+
             if (proceso.esProcesoHijo()) {
-                desc.append(" 👶"); // Emoji para proceso hijo
+                desc.append(" 👶");
             }
-            
-            // Mostrar si tiene hijos
+
             if (proceso.esProcesoConHijos()) {
-                desc.append(" 👨‍👩‍👧‍👦").append(proceso.cantidadHijos()); // Emoji familia + cantidad
+                desc.append(" 👨‍👩‍👧‍👦").append(proceso.cantidadHijos());
             }
-            
+
             desc.append(" (D:").append(proceso.getDuracion())
-                .append(", L:").append(proceso.getTiempoDeLlegada())
-                .append(", T:").append(proceso.getTamanioSlot()).append(")");
-                
+                    .append(", L:").append(proceso.getTiempoDeLlegada())
+                    .append(", T:").append(proceso.getTamanioSlot()).append(")");
+
             this.descripcion = desc.toString();
         }
 
