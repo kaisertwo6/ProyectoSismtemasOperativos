@@ -15,6 +15,8 @@ public class VerProcesoController {
     @FXML private Text labelEspera;
     @FXML private Text labelRetorno;
     @FXML private Text labelTamaño;
+    @FXML private Text labelProcesoPadre;  // NUEVO
+    @FXML private Text labelProcesosHijos; // NUEVO
 
     private Proceso procesoActual;
 
@@ -28,7 +30,13 @@ public class VerProcesoController {
 
         if (proceso != null) {
             // Actualizar título
-            labelTitulo.setText(proceso.getId());
+            String titulo = proceso.getId();
+            if (proceso.esProcesoHijo()) {
+                titulo += " (PROCESO HIJO)";
+            } else if (proceso.esProcesoConHijos()) {
+                titulo += " (PROCESO PADRE)";
+            }
+            labelTitulo.setText(titulo);
 
             // Actualizar información del proceso
             labelLlegada.setText(String.valueOf(proceso.getTiempoDeLlegada()));
@@ -36,6 +44,26 @@ public class VerProcesoController {
             labelEspera.setText(String.valueOf(proceso.getTiempoDeEspera()));
             labelRetorno.setText(String.valueOf(proceso.getTiempoDeRetorno()));
             labelTamaño.setText(String.valueOf(proceso.getTamanioSlot()));
+            
+            // NUEVA INFORMACIÓN: Proceso padre
+            if (proceso.esProcesoHijo() && proceso.getProcesoPadre() != null) {
+                labelProcesoPadre.setText(proceso.getProcesoPadre().getId());
+            } else {
+                labelProcesoPadre.setText("Ninguno (Proceso raíz)");
+            }
+            
+            // NUEVA INFORMACIÓN: Procesos hijos
+            if (proceso.esProcesoConHijos()) {
+                StringBuilder hijosInfo = new StringBuilder();
+                for (int i = 0; i < proceso.getProcesosHijos().size(); i++) {
+                    if (i > 0) hijosInfo.append(", ");
+                    hijosInfo.append(proceso.getProcesosHijos().get(i).getId());
+                }
+                labelProcesosHijos.setText(hijosInfo.toString() + " (" + proceso.cantidadHijos() + " hijos)");
+            } else {
+                labelProcesosHijos.setText("Ninguno");
+            }
+            
         } else {
             // Valores por defecto si el proceso es nulo
             labelTitulo.setText("Proceso Desconocido");
@@ -44,6 +72,8 @@ public class VerProcesoController {
             labelEspera.setText("N/A");
             labelRetorno.setText("N/A");
             labelTamaño.setText("N/A");
+            labelProcesoPadre.setText("N/A");
+            labelProcesosHijos.setText("N/A");
         }
     }
 

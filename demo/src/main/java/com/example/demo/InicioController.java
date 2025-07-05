@@ -1,12 +1,12 @@
 package com.example.demo;
 
+import java.io.IOException;
+import java.util.Random;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-
-import java.io.IOException;
-import java.util.Random;
 
 public class InicioController {
     @FXML private Button btnAñadir;
@@ -15,6 +15,7 @@ public class InicioController {
     @FXML private Button btnRandom;
     @FXML private Button btnRandomGrande;
     @FXML private Button btnEscenarioExtremo;
+    @FXML private Button btnProcesosConHijos; // NUEVO BOTÓN
     @FXML private Button btnSJF;
     @FXML private TextField txtDuracion;
     @FXML private TextField txtSlot;
@@ -168,6 +169,37 @@ public class InicioController {
         System.out.println("=== ESCENARIO EXTREMO CREADO ===");
         System.out.println("Total memoria requerida: ~2750 slots para RAM de 1024 slots");
         System.out.println("Resultado esperado: Swapping intensivo y competencia por memoria");
+    }
+    
+    // NUEVA FUNCIONALIDAD: Crear procesos que pueden generar hijos
+    @FXML
+    void crearProcesosConHijos(ActionEvent event) {
+        System.out.println("=== CREANDO PROCESOS CON CAPACIDAD DE TENER HIJOS ===");
+
+        // Crear 3-4 procesos padre que pueden generar hijos
+        Random random = new Random();
+        int cantidadProcesos = 3 + random.nextInt(2); // 3-4 procesos
+
+        for (int i = 0; i < cantidadProcesos; i++) {
+            int duracion = 8 + random.nextInt(7);      // 8-14 segundos (duración suficiente para crear hijos)
+            int tiempoLlegada = i * 2;                 // 0, 2, 4, 6 segundos (escalonado)
+            int tamanioSlot = 40 + random.nextInt(40); // 40-79 slots (tamaño moderado)
+
+            Proceso procesoPadre = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            
+            // HABILITAR la capacidad de crear hijos
+            procesoPadre.habilitarCreacionHijos();
+            
+            controlador.agregarProcesoAlSistema(procesoPadre);
+
+            System.out.println("Proceso PADRE creado: " + procesoPadre.getId() +
+                    " - Duración: " + duracion + ", Llegada: " + tiempoLlegada +
+                    ", Tamaño: " + tamanioSlot + " slots [PUEDE CREAR HIJOS]");
+        }
+
+        System.out.println("=== PROCESOS CON CAPACIDAD DE HIJOS CREADOS ===");
+        System.out.println("Durante la ejecución, estos procesos tendrán una probabilidad de crear procesos hijos (FORK)");
+        System.out.println("Los procesos hijos aparecerán con nombres como 'Proceso X.H1', 'Proceso X.H2', etc.");
     }
 
     // Iniciar simulación

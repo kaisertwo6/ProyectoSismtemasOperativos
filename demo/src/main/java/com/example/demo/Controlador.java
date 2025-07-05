@@ -1,6 +1,17 @@
 package com.example.demo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -18,12 +29,17 @@ public class Controlador extends Thread {
     private final ReentrantLock memoriaLock = new ReentrantLock();
     private final ReentrantLock swapLock = new ReentrantLock();
 
+    // Control de sincronización para procesos hijos
+    private final Semaphore forkSemaphore = new Semaphore(10); // Máximo 10 operaciones fork simultáneas
+    private final ReentrantLock forkLock = new ReentrantLock();
+
     int tiempoDeLlegadaProm;
     int tiempoDeEsperaProm;
     int tiempoDeRetornoProm;
     int quantum;
 
     Map<String, List<Integer>> listaDireccionesProcesMem;
+    public Map<Integer, String> memoriaAProceso; // Mapear dirección de memoria -> ID de proceso (público para acceso desde HelloController)
 
     private int tiempoActual;
     private volatile boolean running;
@@ -34,7 +50,7 @@ public class Controlador extends Thread {
     private final Object pausaLock = new Object();
 
     private final int TAMAÑO_RAM = 1024;
-    private final int NUMERO_CORES = 2;
+    private final int NUMERO_CORES = 4;
 
     private Controlador() {
         this.ram = new ArrayList<>(Collections.nCopies(TAMAÑO_RAM, 0));
@@ -44,6 +60,7 @@ public class Controlador extends Thread {
         this.procesosPendientesDeLlegada = new ArrayList<>();
         this.procesosTerminados = new ArrayList<>();
         this.listaDireccionesProcesMem = new HashMap<>();
+        this.memoriaAProceso = new HashMap<>(); // Inicializar el mapa de memoria a proceso
 
         // Crear e iniciar cores
         for (int i = 1; i <= NUMERO_CORES; i++) {
@@ -160,7 +177,7 @@ public class Controlador extends Thread {
         }
     }
 
-    // Verificar llegada de procesos y cargarlos
+    // Verificar llegada de procesos y cargarlos (con prioridad a procesos hijos)
     private void verificarLlegadaProcesos() {
         Iterator<Proceso> iterator = procesosPendientesDeLlegada.iterator();
 
@@ -169,14 +186,40 @@ public class Controlador extends Thread {
             if (p.getTiempoDeLlegada() <= tiempoActual) {
                 iterator.remove();
 
-                if (cargarProcesoEnMemoria(p)) {
+                // Dar prioridad a procesos hijos en la carga de memoria
+                boolean esHijo = p.esProcesoHijo();
+                boolean cargado = false;
+                
+                if (esHijo) {
+                    // Intentar cargar proceso hijo con prioridad
+                    if (cargarProcesoEnMemoria(p)) {
+                        cargado = true;
+                        System.out.println(">> 👶 HIJO " + p.getId() + " llegó y se cargó en RAM (PRIORIDAD).");
+                    } else {
+                        // Si no cabe, intentar hacer espacio liberando un proceso no-hijo
+                        if (liberarEspacioParaHijo(p)) {
+                            if (cargarProcesoEnMemoria(p)) {
+                                cargado = true;
+                                System.out.println(">> 👶 HIJO " + p.getId() + " llegó y se cargó en RAM (ESPACIO LIBERADO).");
+                            }
+                        }
+                    }
+                } else {
+                    // Proceso normal
+                    cargado = cargarProcesoEnMemoria(p);
+                }
+                
+                if (cargado) {
                     procesosListos.offer(p);
                     p.setEstado(EstadoProceso.ESPERA);
                     p.setUltimaEntradaColaListos(tiempoActual);
-                    System.out.println(">> " + p.getId() + " llegó y se cargó en RAM.");
+                    if (!esHijo) {
+                        System.out.println(">> " + p.getId() + " llegó y se cargó en RAM.");
+                    }
                 } else {
                     moverProcesoASwap(p);
-                    System.out.println(">> " + p.getId() + " llegó pero fue a SWAP (RAM llena).");
+                    String tipoMsg = esHijo ? "👶 HIJO " : "";
+                    System.out.println(">> " + tipoMsg + p.getId() + " llegó pero fue a SWAP (RAM llena).");
                 }
             } else {
                 break;
@@ -278,12 +321,14 @@ public class Controlador extends Thread {
     public void liberarMemoriaProceso(Proceso proceso) {
         memoriaLock.lock();
         try {
-            int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
+            String procesoIdStr = proceso.getId();
             List<Integer> direccionesLiberadas = new ArrayList<>();
 
+            // Buscar direcciones que pertenecen a este proceso específico
             for (int i = 0; i < ram.size(); i++) {
-                if (ram.get(i) == procesoId) {
+                if (memoriaAProceso.containsKey(i) && memoriaAProceso.get(i).equals(procesoIdStr)) {
                     ram.set(i, 0);
+                    memoriaAProceso.remove(i); // Limpiar el mapeo
                     direccionesLiberadas.add(i);
                 }
             }
@@ -319,13 +364,15 @@ public class Controlador extends Thread {
         Collections.shuffle(indicesLibres);
 
         // Asignar los primeros N slots aleatorios
-        int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
+        String procesoIdStr = proceso.getId(); // ID completo (incluye .H1, .H2, etc.)
+        int procesoIdNum = extraerNumeroIdProceso(procesoIdStr); // Solo número para compatibilidad
         List<Integer> direccionesAsignadas = new ArrayList<>();
 
         for (int i = 0; i < tamanioNecesario; i++) {
             int indiceAleatorio = indicesLibres.get(i);
-            ram.set(indiceAleatorio, procesoId);
+            ram.set(indiceAleatorio, procesoIdNum);
             direccionesAsignadas.add(indiceAleatorio);
+            memoriaAProceso.put(indiceAleatorio, procesoIdStr); // Mapear dirección a proceso completo
         }
 
         // Ordenar direcciones para mostrar mejor en logs
@@ -375,6 +422,7 @@ public class Controlador extends Thread {
         for (int i = 0; i < ram.size(); i++) {
             if (ram.get(i) == procesoId) {
                 ram.set(i, 0);
+                memoriaAProceso.remove(i); // Desmapear dirección de proceso
             }
         }
     }
@@ -444,6 +492,88 @@ public class Controlador extends Thread {
         System.out.println("Quantum establecido: " + quantum);
     }
 
+    // Método seguro para agregar procesos hijos con control de sincronización
+    public boolean agregarProcesoHijoAlSistema(Proceso procesoHijo) {
+        try {
+            // Adquirir semáforo para limitar operaciones concurrentes
+            forkSemaphore.acquire();
+            
+            forkLock.lock();
+            try {
+                // Verificar que el proceso hijo es válido
+                if (procesoHijo == null) {
+                    return false;
+                }
+                
+                // Agregar a la lista de procesos pendientes
+                procesosPendientesDeLlegada.add(procesoHijo);
+                
+                System.out.println("🚀 HIJO AGREGADO: " + procesoHijo.getId() + 
+                                 " (Padre: " + (procesoHijo.getProcesoPadre() != null ? 
+                                   procesoHijo.getProcesoPadre().getId() : "N/A") + 
+                                 ", Llegada: " + procesoHijo.getTiempoDeLlegada() + ")");
+                return true;
+                
+            } finally {
+                forkLock.unlock();
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Error al agregar proceso hijo: " + e.getMessage());
+            Thread.currentThread().interrupt();
+            return false;
+        } finally {
+            forkSemaphore.release();
+        }
+    }
+
+    // Liberar espacio en memoria para un proceso hijo prioritario
+    private boolean liberarEspacioParaHijo(Proceso procesoHijo) {
+        memoriaLock.lock();
+        try {
+            // Buscar procesos no-hijos en RAM que puedan moverse a SWAP
+            Iterator<Proceso> iterator = procesosListos.iterator();
+            while (iterator.hasNext()) {
+                Proceso candidato = iterator.next();
+                
+                // Solo mover procesos que NO sean hijos y que no estén ejecutándose
+                if (!candidato.esProcesoHijo() && !estaEjecutandose(candidato)) {
+                    iterator.remove();
+                    liberarMemoriaProcesoSinCargarDesdeSwap(candidato);
+                    moverProcesoASwap(candidato);
+                    
+                    System.out.println("🔄 SWAP PARA HIJO: " + candidato.getId() + 
+                                     " movido a SWAP para hacer espacio a " + procesoHijo.getId());
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            memoriaLock.unlock();
+        }
+    }
+    
+    // Verificar si un proceso está ejecutándose en algún core
+    private boolean estaEjecutandose(Proceso proceso) {
+        return cores.stream().anyMatch(core -> 
+            core.isOcupado() && 
+            core.getProcesoEjecucion() != null && 
+            core.getProcesoEjecucion().getId().equals(proceso.getId())
+        );
+    }
+
+    // Método auxiliar para extraer el número de ID de un proceso (maneja hijos)
+    private int extraerNumeroIdProceso(String procesoId) {
+        try {
+            // Para "Proceso 1" devuelve 1
+            // Para "Proceso 1.H1" devuelve 1 (el del padre)
+            String[] partes = procesoId.replace("Proceso ", "").split("\\.");
+            return Integer.parseInt(partes[0]);
+        } catch (Exception e) {
+            System.err.println("Error al extraer ID de proceso: " + procesoId);
+            return 1; // Valor por defecto
+        }
+    }
+
     // Getters
     public Queue<Proceso> getProcesosListos() { return procesosListos; }
     public Queue<Proceso> getProcesosEnSwap() { return procesosEnSwap; }
@@ -492,6 +622,11 @@ public class Controlador extends Thread {
         this.procesosPendientesDeLlegada.clear();
         this.procesosTerminados.clear();
         this.listaDireccionesProcesMem.clear();
+        this.memoriaAProceso.clear(); // Limpiar mapeo de memoria a proceso
+        
+        // Limpiar semáforo (liberar todos los permisos)
+        forkSemaphore.drainPermits();
+        forkSemaphore.release(10); // Restaurar permisos iniciales
 
         // Reinicializar variables
         this.tiempoDeLlegadaProm = 0;

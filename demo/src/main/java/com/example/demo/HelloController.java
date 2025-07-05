@@ -272,6 +272,8 @@ public class HelloController extends Thread {
     private void inicializarInterfaz() {
         listaNucleos.add(new CoreInfo("Core 1", "Libre", "Disponible"));
         listaNucleos.add(new CoreInfo("Core 2", "Libre", "Disponible"));
+        listaNucleos.add(new CoreInfo("Core 3", "Libre", "Disponible"));
+        listaNucleos.add(new CoreInfo("Core 4", "Libre", "Disponible"));
         inicializarMemoriaRAM(1024);
         configurarPanelQuantum();
         actualizarInformacionGeneral();
@@ -305,27 +307,29 @@ public class HelloController extends Thread {
 
         Platform.runLater(() -> {
             List<Integer> ram = controlador.ram;
+            Map<Integer, String> memoriaAProceso = controlador.memoriaAProceso;
 
-            Map<Integer, List<Integer>> procesosBloques = new HashMap<>();
-            Map<Integer, EstadoProceso> estadosProcesos = new HashMap<>();
+            Map<String, List<Integer>> procesosBloques = new HashMap<>();
+            Map<String, EstadoProceso> estadosProcesos = new HashMap<>();
 
-            // Obtener estados de procesos activos
+            // Obtener estados de procesos activos usando el ID completo
             for (Core core : controlador.cores) {
                 if (core.isOcupado() && core.getProcesoEjecucion() != null) {
-                    int procesoId = Integer.parseInt(core.getProcesoEjecucion().getId().replace("Proceso ", ""));
+                    String procesoId = core.getProcesoEjecucion().getId();
                     estadosProcesos.put(procesoId, EstadoProceso.EJECUCION);
                 }
             }
 
             // Procesos en RAM (cola de listos)
             for (Proceso proceso : controlador.getProcesosListos()) {
-                int procesoId = Integer.parseInt(proceso.getId().replace("Proceso ", ""));
+                String procesoId = proceso.getId();
                 estadosProcesos.put(procesoId, EstadoProceso.ESPERA);
             }
 
+            // Usar el nuevo mapeo de memoria a proceso
             for (int i = 0; i < ram.size(); i++) {
-                Integer procesoId = ram.get(i);
-                if (procesoId != null && procesoId != 0) {
+                if (memoriaAProceso.containsKey(i)) {
+                    String procesoId = memoriaAProceso.get(i);
                     procesosBloques.computeIfAbsent(procesoId, k -> new ArrayList<>()).add(i);
                 }
             }
@@ -333,10 +337,10 @@ public class HelloController extends Thread {
             listaMemoria.clear();
 
             // Mostrar procesos activos como rangos
-            for (Map.Entry<Integer, List<Integer>> entry : procesosBloques.entrySet()) {
+            for (Map.Entry<String, List<Integer>> entry : procesosBloques.entrySet()) {
                 List<Integer> direcciones = entry.getValue();
                 if (!direcciones.isEmpty()) {
-                    int procesoId = entry.getKey();
+                    String procesoId = entry.getKey();
                     int inicio = direcciones.get(0);
                     int fin = direcciones.get(direcciones.size() - 1);
                     String rango = (inicio == fin) ? String.valueOf(inicio) : inicio + "-" + fin;
@@ -354,9 +358,12 @@ public class HelloController extends Thread {
                             estadoTexto = "Ocupado";
                     }
 
+                    // Mostrar ID completo para procesos hijos (ej: "Proceso 1.H1")
+                    String displayId = procesoId.contains(".H") ? procesoId : procesoId.replace("Proceso ", "P");
+
                     listaMemoria.add(new MemoriaInfo(
                             inicio,
-                            "P" + procesoId,
+                            displayId,
                             estadoTexto,
                             "Rango: " + rango + " (" + direcciones.size() + " slots)"
                     ));
@@ -799,17 +806,34 @@ public class HelloController extends Thread {
 
         public ProcesoInfo(Proceso proceso) {
             this.proceso = proceso;
-            this.descripcion = proceso.getId() + " (D:" + proceso.getDuracion() +
-                    ", L:" + proceso.getTiempoDeLlegada() +
-                    ", T:" + proceso.getTamanioSlot() + ")";
+            actualizarDescripcion();
+        }
+        
+        private void actualizarDescripcion() {
+            StringBuilder desc = new StringBuilder();
+            desc.append(proceso.getId());
+            
+            // Mostrar si es proceso hijo
+            if (proceso.esProcesoHijo()) {
+                desc.append(" 👶"); // Emoji para proceso hijo
+            }
+            
+            // Mostrar si tiene hijos
+            if (proceso.esProcesoConHijos()) {
+                desc.append(" 👨‍👩‍👧‍👦").append(proceso.cantidadHijos()); // Emoji familia + cantidad
+            }
+            
+            desc.append(" (D:").append(proceso.getDuracion())
+                .append(", L:").append(proceso.getTiempoDeLlegada())
+                .append(", T:").append(proceso.getTamanioSlot()).append(")");
+                
+            this.descripcion = desc.toString();
         }
 
         public Proceso getProceso() { return proceso; }
         public void setProceso(Proceso proceso) {
             this.proceso = proceso;
-            this.descripcion = proceso.getId() + " (D:" + proceso.getDuracion() +
-                    ", L:" + proceso.getTiempoDeLlegada() +
-                    ", T:" + proceso.getTamanioSlot() + ")";
+            actualizarDescripcion();
         }
 
         public String getDescripcion() { return descripcion; }

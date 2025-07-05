@@ -1,9 +1,12 @@
 package com.example.demo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty; // Importar si lo vas a usar para el ID String
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty; // Importar si lo vas a usar para el ID String
+import javafx.beans.property.StringProperty;
 
 public class Proceso {
 
@@ -21,6 +24,11 @@ public class Proceso {
 
     private IntegerProperty tiempoCpuAcumulado;
     private int ultimaEntradaColaListos;
+    
+    // NUEVOS CAMPOS PARA PROCESOS HIJOS
+    private Proceso procesoPadre; // Referencia al proceso padre (null si es proceso raíz)
+    private List<Proceso> procesosHijos; // Lista de procesos hijos
+    private boolean tieneHijos; // Flag para indicar si este proceso puede crear hijos
 
 
     public Proceso(int duracion, int tiempoDeLlegada, int tamanioSlot) {
@@ -35,6 +43,19 @@ public class Proceso {
         this.estado = EstadoProceso.ESPERA;
         this.tiempoCpuAcumulado = new SimpleIntegerProperty(0); // Nueva inicialización
         this.ultimaEntradaColaListos = tiempoDeLlegada; // Nueva inicialización
+        
+        // INICIALIZAR CAMPOS DE PROCESOS HIJOS
+        this.procesoPadre = null;
+        this.procesosHijos = new ArrayList<>();
+        this.tieneHijos = false; // Por defecto no puede crear hijos
+    }
+    
+    // Constructor para procesos hijos (llamado por el proceso padre)
+    public Proceso(int duracion, int tiempoDeLlegada, int tamanioSlot, Proceso procesoPadre) {
+        this(duracion, tiempoDeLlegada, tamanioSlot); // Llamar al constructor principal
+        this.procesoPadre = procesoPadre;
+        // Cambiar el ID para mostrar relación padre-hijo
+        this.id.set(procesoPadre.getId() + ".H" + (procesoPadre.procesosHijos.size() + 1));
     }
 
     // --- Getters para las Propiedades (¡CRUCIAL para PropertyValueFactory!) ---
@@ -139,6 +160,110 @@ public class Proceso {
 
     public static void resetNextId() {
         nextId = 1;
+    }
+    
+    // ======== Metodos de manejo de proceso hijos ========
+    
+    // Activar la capacidad de crear hijos para este proceso
+    public void habilitarCreacionHijos() {
+        this.tieneHijos = true;
+    }
+    
+    // Verificar si este proceso puede crear hijos
+    public boolean puedeCrearHijos() {
+        return this.tieneHijos;
+    }
+    
+    // Crear un proceso hijo
+    public Proceso crearProcesoHijo(int duracion, int tamanioSlot) {
+        if (!this.tieneHijos) {
+            throw new IllegalStateException("El proceso " + this.getId() + " no puede crear hijos");
+        }
+        
+        // Limitar el número de hijos que puede crear un proceso (máximo 4)
+        if (this.procesosHijos.size() >= 4) {
+            System.out.println("FORK BLOQUEADO: " + this.getId() + " ya tiene el máximo de hijos permitidos (4)");
+            return null;
+        }
+        
+        // El proceso hijo llega al mismo tiempo que el padre + un pequeño delay
+        int tiempoLlegadaHijo = this.getTiempoDeLlegada() + 1;
+        
+        Proceso procesoHijo = new Proceso(duracion, tiempoLlegadaHijo, tamanioSlot, this);
+        this.procesosHijos.add(procesoHijo);
+        
+        System.out.println("FORK: " + this.getId() + " creó proceso hijo " + procesoHijo.getId());
+        return procesoHijo;
+    }
+    
+    // Crear un proceso hijo con tiempo de llegada específico
+    public Proceso crearProcesoHijo(int duracion, int tamanioSlot, int tiempoLlegada) {
+        if (!this.tieneHijos) {
+            throw new IllegalStateException("El proceso " + this.getId() + " no puede crear hijos");
+        }
+        
+        // Limitar el número de hijos que puede crear un proceso (máximo 4)
+        if (this.procesosHijos.size() >= 4) {
+            System.out.println("FORK BLOQUEADO: " + this.getId() + " ya tiene el máximo de hijos permitidos (4)");
+            return null;
+        }
+        
+        Proceso procesoHijo = new Proceso(duracion, tiempoLlegada, tamanioSlot, this);
+        this.procesosHijos.add(procesoHijo);
+        
+        System.out.println("FORK: " + this.getId() + " creó proceso hijo " + procesoHijo.getId() + 
+                          " con llegada en tiempo " + tiempoLlegada);
+        return procesoHijo;
+    }
+    
+    // Obtener el proceso padre
+    public Proceso getProcesoPadre() {
+        return this.procesoPadre;
+    }
+    
+    // Obtener lista de procesos hijos
+    public List<Proceso> getProcesosHijos() {
+        return new ArrayList<>(this.procesosHijos); // Devolver copia para evitar modificaciones externas
+    }
+    
+    // Verificar si es un proceso hijo (tiene padre)
+    public boolean esProcesoHijo() {
+        return this.procesoPadre != null;
+    }
+    
+    // Verificar si es un proceso padre (tiene hijos)
+    public boolean esProcesoConHijos() {
+        return !this.procesosHijos.isEmpty();
+    }
+    
+    // Contar total de procesos hijos
+    public int cantidadHijos() {
+        return this.procesosHijos.size();
+    }
+    
+    // Verificar si el proceso padre puede terminar (todos los hijos han terminado)
+    public boolean puedeTerminarProcesoPadre() {
+        if (!this.esProcesoConHijos()) {
+            return true; // No tiene hijos, puede terminar normalmente
+        }
+        
+        // Verificar que todos los hijos hayan terminado
+        for (Proceso hijo : this.procesosHijos) {
+            if (hijo.getEstado() != EstadoProceso.TERMINADO) {
+                return false; // Aún hay hijos sin terminar
+            }
+        }
+        return true; // Todos los hijos han terminado
+    }
+    
+    // Marcar proceso padre como terminado cuando todos los hijos terminen
+    public void verificarTerminacionPadre() {
+        if (this.esProcesoConHijos() && this.puedeTerminarProcesoPadre() && 
+            this.getEstado() != EstadoProceso.TERMINADO) {
+            this.setEstado(EstadoProceso.TERMINADO);
+            System.out.println("👨‍👩‍👧‍👦 PADRE TERMINADO: " + this.getId() + 
+                             " terminó porque todos sus " + this.cantidadHijos() + " hijos terminaron");
+        }
     }
 }
 

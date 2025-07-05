@@ -54,6 +54,13 @@
                         <Font size="12.0" />
                     </font>
                 </Button>
+                
+                <!-- NUEVO: Botón para procesos con hijos -->
+                <Button fx:id="btnProcesosConHijos" layoutX="831.0" layoutY="255.0" mnemonicParsing="false" onAction="#crearProcesosConHijos" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #9b59b6; -fx-background-radius: 15;" text="PROCESOS CON HIJOS" textFill="WHITE" wrapText="true">
+                    <font>
+                        <Font size="11.0" />
+                    </font>
+                </Button>
 
                 <TextField fx:id="txtTiempo" layoutX="610.0" layoutY="270.0" style="-fx-border-color: #5284FF;" />
                 <Text layoutX="483.5" layoutY="74.0" strokeType="OUTSIDE" strokeWidth="0.0" text="INICIO" wrappingWidth="113.0">
@@ -104,6 +111,11 @@
                     </font>
                 </Text>
                 <Text fill="#e74c3c" layoutX="1000.0" layoutY="227.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Swapping intensivo">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Text>
+                <Text fill="#9b59b6" layoutX="1000.0" layoutY="272.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Crea procesos hijos">
                     <font>
                         <Font name="System Bold" size="12.0" />
                     </font>
