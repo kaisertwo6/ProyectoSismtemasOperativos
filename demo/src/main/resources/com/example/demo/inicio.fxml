@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.control.CheckBox?>
 
 <VBox prefHeight="800.0" prefWidth="1536.0" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom right, #111827, #1f2937, #000000); -fx-padding: 25;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
     <children>
@@ -105,6 +106,21 @@
                                         <Font name="Consolas Bold" size="15.0" />
                                     </font>
                                 </Label>
+
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <children>
+                                        <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Comportamiento:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="15.0" />
+                                            </font>
+                                        </Text>
+                                        <CheckBox fx:id="checkSwapInteligente" selected="true" text="SWAP Inteligente (Bidireccional)" textFill="#10b981">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </CheckBox>
+                                    </children>
+                                </HBox>
                             </children>
                         </VBox>
                     </children>
@@ -306,6 +322,11 @@
                                 <Button fx:id="btnSwapLimitado" mnemonicParsing="false" onAction="#crearSwapLimitado" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #4338ca; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 12px;" text="SWAP LIMITADO" GridPane.columnIndex="0" GridPane.rowIndex="3">
                                     <font>
                                         <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnSwapInteligente" mnemonicParsing="false" onAction="#crearSwapInteligente" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="SWAP INTELIGENTE" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <font>
+                                        <Font name="Consolas Bold" size="11.0" />
                                     </font>
                                 </Button>
                             </children>

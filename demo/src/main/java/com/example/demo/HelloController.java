@@ -570,7 +570,7 @@ public class HelloController extends Thread {
             List<ProcesoInfo> procesosEnRamEspera = new ArrayList<>();
             List<ProcesoInfo> procesosEnSwap = new ArrayList<>();
             List<ProcesoInfo> procesosPendientes = new ArrayList<>();
-            List<ProcesoInfo> procesosEnColaEspera = new ArrayList<>(); // NUEVO
+            List<ProcesoInfo> procesosEnColaEspera = new ArrayList<>();
             List<ProcesoInfo> procesosTerminados = new ArrayList<>();
 
             Map<String, ProcesoInfo> procesosEnTabla = new HashMap<>();
@@ -610,7 +610,7 @@ public class HelloController extends Thread {
             todosProcesos.addAll(controlador.getProcesosPendientesDeLlegada());
             todosProcesos.addAll(controlador.getProcesosListos());
             todosProcesos.addAll(controlador.getProcesosEnSwap());
-            todosProcesos.addAll(controlador.getProcesosEnColaEspera()); // NUEVO
+            todosProcesos.addAll(controlador.getProcesosEnColaEspera());
             todosProcesos.addAll(controlador.getProcesosTerminados());
 
             for (Proceso proceso : todosProcesos) {
@@ -685,9 +685,9 @@ public class HelloController extends Thread {
                         }
                         procesosEnSwap.add(info);
 
-                    } else if (controlador.getProcesosEnColaEspera().contains(proceso)) { // NUEVO
+                    } else if (controlador.getProcesosEnColaEspera().contains(proceso)) {
                         descripcionLimpia = proceso.getId() + " (D:" +
-                                proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ") [COLA ESPERA]";
+                                proceso.getDuracion() + ", T:" + proceso.getTamanioSlot() + ") [ESPERANDO ESPACIO]";
 
                         if (procesosEnTabla.containsKey(proceso.getId())) {
                             info = procesosEnTabla.get(proceso.getId());
@@ -729,7 +729,7 @@ public class HelloController extends Thread {
             procesosOrdenadosFinales.addAll(procesosEjecutandose);
             procesosOrdenadosFinales.addAll(procesosEnRamEspera);
             procesosOrdenadosFinales.addAll(procesosEnSwap);
-            procesosOrdenadosFinales.addAll(procesosEnColaEspera); // NUEVO
+            procesosOrdenadosFinales.addAll(procesosEnColaEspera);
             procesosOrdenadosFinales.addAll(procesosPendientes);
             procesosOrdenadosFinales.addAll(procesosTerminados);
 
@@ -762,12 +762,12 @@ public class HelloController extends Thread {
             listaSwap.clear();
 
             Queue<Proceso> procesosEnSwap = controlador.getProcesosEnSwap();
-            Queue<Proceso> procesosEnColaEspera = controlador.getProcesosEnColaEspera(); // NUEVO
+            // NO incluir procesosEnColaEspera aquí - esos van en la tabla "PROCESOS EN COLA"
 
-            if (procesosEnSwap.isEmpty() && procesosEnColaEspera.isEmpty()) {
+            if (procesosEnSwap.isEmpty()) {
                 listaSwap.add(new SwapInfo("💾 SWAP VACÍO", "Sin procesos en disco"));
             } else {
-                // Procesos en SWAP
+                // SOLO procesos realmente en SWAP (disco)
                 for (Proceso proceso : procesosEnSwap) {
                     String procesoInfo = proceso.getId();
                     String tamanioInfo = "📦 " + proceso.getTamanioSlot() + " slots";
@@ -777,32 +777,13 @@ public class HelloController extends Thread {
                     listaSwap.add(new SwapInfo(procesoInfo, detalles));
                 }
 
-                // NUEVO: Procesos en cola de espera
-                for (Proceso proceso : procesosEnColaEspera) {
-                    String procesoInfo = "⏳ " + proceso.getId();
-                    String tamanioInfo = "📦 " + proceso.getTamanioSlot() + " slots";
-                    String duracionInfo = "⏱️ " + proceso.getDuracion() + "s";
-
-                    String detalles = tamanioInfo + " | " + duracionInfo + " [ESPERA]";
-                    listaSwap.add(new SwapInfo(procesoInfo, detalles));
-                }
-
-                // Estadísticas SWAP
+                // Estadísticas SWAP (solo procesos realmente en disco)
                 int slotsSwapUsados = controlador.getTamañoSwap() - Collections.frequency(controlador.getSwap(), 0);
                 int totalSlots = procesosEnSwap.stream().mapToInt(Proceso::getTamanioSlot).sum();
                 listaSwap.add(new SwapInfo(
                         "📊 SWAP: " + slotsSwapUsados + "/" + controlador.getTamañoSwap(),
-                        procesosEnSwap.size() + " procesos | " + totalSlots + " slots"
+                        procesosEnSwap.size() + " procesos en disco | " + totalSlots + " slots usados"
                 ));
-
-                // NUEVO: Estadísticas cola de espera
-                if (!procesosEnColaEspera.isEmpty()) {
-                    int totalSlotsEspera = procesosEnColaEspera.stream().mapToInt(Proceso::getTamanioSlot).sum();
-                    listaSwap.add(new SwapInfo(
-                            "⏳ COLA ESPERA:",
-                            procesosEnColaEspera.size() + " procesos | " + totalSlotsEspera + " slots"
-                    ));
-                }
             }
 
             tablaSwap.refresh();

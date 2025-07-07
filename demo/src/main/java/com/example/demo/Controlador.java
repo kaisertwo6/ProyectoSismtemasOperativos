@@ -51,9 +51,15 @@ public class Controlador extends Thread {
     private final Object pausaLock = new Object();
 
     private final int TAMAÑO_RAM = 1024;
-    private int tamaño_swap = 512; // MODIFICADO: Ahora es variable
-    private boolean swapLimitado = true; // NUEVO: Flag para controlar si SWAP es limitado
+    private int tamaño_swap = 512;
+    private boolean swapLimitado = true;
     private final int NUMERO_CORES = 4;
+
+    private final int UMBRAL_INACTIVIDAD = 8; // Unidades de tiempo sin ejecutar
+    private final int UMBRAL_MEMORIA_CRITICA = 100; // Slots libres para activar swapping
+    private Map<String, Integer> ultimaEjecucionProceso; // Track última ejecución
+    private boolean swapInteligente = true; // Flag para activar/desactivar
+
 
     private Controlador() {
         this.ram = new ArrayList<>(Collections.nCopies(TAMAÑO_RAM, 0));
@@ -67,6 +73,7 @@ public class Controlador extends Thread {
         this.listaDireccionesProcesMem = new HashMap<>();
         this.memoriaAProceso = new HashMap<>();
         this.swapAProceso = new HashMap<>();
+        this.ultimaEjecucionProceso = new HashMap<>();
 
         for (int i = 1; i <= NUMERO_CORES; i++) {
             Core core = new Core(i, this);
@@ -89,32 +96,32 @@ public class Controlador extends Thread {
         return instance;
     }
 
-    // NUEVO: Configurar modo de SWAP
     public void configurarSwap(boolean limitado, int tamaño) {
         this.swapLimitado = limitado;
         if (limitado) {
             this.tamaño_swap = tamaño;
-            // Redimensionar SWAP si es necesario
             if (swap.size() != tamaño) {
                 swap.clear();
                 swap.addAll(Collections.nCopies(tamaño, 0));
                 swapAProceso.clear();
             }
         } else {
-            // SWAP ilimitado: usar un tamaño muy grande
             this.tamaño_swap = Integer.MAX_VALUE;
         }
         System.out.println("SWAP configurado: " + (limitado ? "Limitado (" + tamaño + " slots)" : "Ilimitado"));
     }
 
+    public void configurarSwapInteligente(boolean activar) {
+        this.swapInteligente = activar;
+        System.out.println("SWAP inteligente: " + (activar ? "ACTIVADO (bidireccional)" : "DESACTIVADO (solo sobrecarga)"));
+    }
+
     public void setPausado(boolean pausado) {
         synchronized (pausaLock) {
             this.pausado = pausado;
-
             for (Core core : cores) {
                 core.setPausado(pausado);
             }
-
             if (!pausado) {
                 pausaLock.notifyAll();
             }
@@ -155,16 +162,22 @@ public class Controlador extends Thread {
         Collections.sort(procesosPendientesDeLlegada, Comparator.comparingInt(Proceso::getTiempoDeLlegada));
         System.out.println("=== INICIO SIMULACIÓN ===");
         System.out.println("SWAP: " + (swapLimitado ? "Limitado (" + tamaño_swap + " slots)" : "Ilimitado"));
+        System.out.println("Modo SWAP: " + (swapInteligente ? "Inteligente (bidireccional)" : "Solo sobrecarga"));
 
         while (running) {
             esperarSiPausado();
-
             if (!running) break;
 
             tiempoActual++;
             System.out.println("\n--- Tiempo: " + tiempoActual + " ---");
 
             verificarLlegadaProcesos();
+
+            // NUEVA LÓGICA: Evaluación inteligente de SWAP
+            if (swapInteligente) {
+                evaluarSwapInteligente();
+            }
+
             cargarProcesosDesdeSwap();
             procesarColaEspera();
 
@@ -190,6 +203,178 @@ public class Controlador extends Thread {
             }
         }
     }
+
+    private void evaluarSwapInteligente() {
+        if (!swapInteligente) return;
+
+        memoriaLock.lock();
+        try {
+            int memoriaLibre = Collections.frequency(ram, 0);
+
+            // Si la memoria está crítica, hacer SWAP OUT (RAM → SWAP)
+            if (memoriaLibre < UMBRAL_MEMORIA_CRITICA) {
+                realizarSwapOut();
+            }
+
+            // Siempre intentar traer procesos prioritarios de SWAP (SWAP → RAM)
+            realizarSwapIn();
+
+        } finally {
+            memoriaLock.unlock();
+        }
+    }
+
+    private void realizarSwapOut() {
+        List<Proceso> candidatosSwapOut = new ArrayList<>();
+
+        // Buscar procesos inactivos en RAM
+        for (Proceso proceso : procesosListos) {
+            if (esProcesoInactivo(proceso) && !estaEjecutandose(proceso)) {
+                candidatosSwapOut.add(proceso);
+            }
+        }
+
+        // Ordenar por inactividad (más inactivos primero)
+        candidatosSwapOut.sort((p1, p2) -> {
+            int inactividad1 = tiempoActual - ultimaEjecucionProceso.getOrDefault(p1.getId(), p1.getTiempoDeLlegada());
+            int inactividad2 = tiempoActual - ultimaEjecucionProceso.getOrDefault(p2.getId(), p2.getTiempoDeLlegada());
+            return Integer.compare(inactividad2, inactividad1); // Más inactivo primero
+        });
+
+        // Hacer SWAP OUT de los más inactivos
+        int procesosMovidos = 0;
+        for (Proceso proceso : candidatosSwapOut) {
+            if (procesosMovidos >= 2) break; // Limitar cantidad por ciclo
+
+            if (moverProcesoActivoASwap(proceso)) {
+                procesosMovidos++;
+            }
+        }
+    }
+
+    private void realizarSwapIn() {
+        if (procesosEnSwap.isEmpty()) return;
+
+        int memoriaLibre = Collections.frequency(ram, 0);
+        if (memoriaLibre < 50) return; // Necesita espacio mínimo
+
+        // Buscar procesos en SWAP que deberían estar en RAM
+        List<Proceso> candidatosSwapIn = new ArrayList<>();
+        for (Proceso proceso : procesosEnSwap) {
+            if (debeEstarEnRAM(proceso)) {
+                candidatosSwapIn.add(proceso);
+            }
+        }
+
+        // Priorizar por llegada reciente y tamaño pequeño
+        candidatosSwapIn.sort((p1, p2) -> {
+            int prioridad1 = calcularPrioridadSwapIn(p1);
+            int prioridad2 = calcularPrioridadSwapIn(p2);
+            return Integer.compare(prioridad2, prioridad1); // Mayor prioridad primero
+        });
+
+        // Hacer SWAP IN
+        for (Proceso proceso : candidatosSwapIn) {
+            if (asignarMemoriaProceso(proceso)) {
+                procesosEnSwap.remove(proceso);
+                liberarSwapProceso(proceso);
+                procesosListos.offer(proceso);
+                proceso.setEstado(EstadoProceso.ESPERA);
+                proceso.setUltimaEntradaColaListos(tiempoActual);
+
+                System.out.println("🔄 SWAP IN: " + proceso.getId() + " cargado a RAM por prioridad");
+                break; // Solo uno por ciclo para no sobrecargar
+            }
+        }
+    }
+
+    private boolean esProcesoInactivo(Proceso proceso) {
+        int ultimaEjecucion = ultimaEjecucionProceso.getOrDefault(proceso.getId(), proceso.getTiempoDeLlegada());
+        int tiempoInactivo = tiempoActual - ultimaEjecucion;
+
+        return tiempoInactivo >= UMBRAL_INACTIVIDAD;
+    }
+
+    private boolean debeEstarEnRAM(Proceso proceso) {
+        // Procesos hijos tienen prioridad
+        if (proceso.esProcesoHijo()) return true;
+
+        // Procesos con poco tiempo de CPU restante
+        if (proceso.getDuracion() <= 3) return true;
+
+        // Procesos pequeños
+        if (proceso.getTamanioSlot() <= 50) return true;
+
+        // Procesos que llegaron recientemente
+        if (tiempoActual - proceso.getTiempoDeLlegada() <= 5) return true;
+
+        return false;
+    }
+
+    private int calcularPrioridadSwapIn(Proceso proceso) {
+        int prioridad = 0;
+
+        // Prioridad por tipo
+        if (proceso.esProcesoHijo()) prioridad += 100;
+
+        // Prioridad por duración restante (procesos cortos primero)
+        prioridad += Math.max(0, 50 - proceso.getDuracion());
+
+        // Prioridad por tamaño (procesos pequeños primero)
+        prioridad += Math.max(0, 100 - proceso.getTamanioSlot());
+
+        // Prioridad por tiempo en SWAP (menos tiempo en SWAP = mayor prioridad)
+        int tiempoEnSwap = tiempoActual - proceso.getUltimaEntradaColaListos();
+        prioridad += Math.max(0, 20 - tiempoEnSwap);
+
+        return prioridad;
+    }
+
+    private boolean moverProcesoActivoASwap(Proceso proceso) {
+        if (proceso.esProcesoHijo()) {
+            return false; // No hacer swap out de procesos hijos
+        }
+
+        swapLock.lock();
+        try {
+            // Verificar si hay espacio en SWAP
+            if (swapLimitado && !tieneEspacioEnSwap(proceso.getTamanioSlot())) {
+                return false;
+            }
+
+            // Liberar memoria del proceso
+            liberarMemoriaProcesoSinCargarDesdeSwap(proceso);
+
+            // Mover a SWAP
+            if (!swapLimitado) {
+                expandirSwap(proceso.getTamanioSlot());
+            }
+
+            asignarSwapProceso(proceso);
+            procesosListos.remove(proceso);
+            procesosEnSwap.offer(proceso);
+            proceso.setEstado(EstadoProceso.SWAP);
+
+            System.out.println("🔄 SWAP OUT: " + proceso.getId() + " movido a SWAP por inactividad");
+            return true;
+
+        } finally {
+            swapLock.unlock();
+        }
+    }
+
+    private boolean tieneEspacioEnSwap(int tamanioNecesario) {
+        if (!swapLimitado) return true;
+
+        long slotsLibresSwap = swap.stream().mapToLong(slot -> slot == 0 ? 1 : 0).sum();
+        return slotsLibresSwap >= tamanioNecesario;
+    }
+
+    public void registrarEjecucionProceso(String procesoId) {
+        ultimaEjecucionProceso.put(procesoId, tiempoActual);
+    }
+
+
 
     private void verificarLlegadaProcesos() {
         Iterator<Proceso> iterator = procesosPendientesDeLlegada.iterator();
@@ -227,6 +412,10 @@ public class Controlador extends Thread {
                     procesosListos.offer(p);
                     p.setEstado(EstadoProceso.ESPERA);
                     p.setUltimaEntradaColaListos(tiempoActual);
+
+                    // NUEVO: Registrar llegada como "ejecución" inicial
+                    ultimaEjecucionProceso.put(p.getId(), tiempoActual);
+
                     if (!esHijo) {
                         String tipoMsg = p.getNombrePrograma() != null ?
                                 " (Parte de " + p.getNombrePrograma() + ")" : "";
@@ -257,7 +446,6 @@ public class Controlador extends Thread {
                 }
                 System.out.println(">> " + tipoMsg + proceso.getId() + " llegó y fue a COLA DE ESPERA (SWAP lleno).");
             } else {
-                // SWAP ilimitado: expandir automáticamente
                 expandirSwap(proceso.getTamanioSlot());
                 moverProcesoASwap(proceso);
                 String tipoMsg = proceso.esProcesoHijo() ? "👶 HIJO " : "";
@@ -652,6 +840,10 @@ public class Controlador extends Thread {
     }
 
     // Getters
+
+    public boolean isSwapInteligente() { return swapInteligente; }
+    public void setSwapInteligente(boolean swapInteligente) { this.swapInteligente = swapInteligente; }
+    public int getUmbralInactividad() { return UMBRAL_INACTIVIDAD; }
     public Queue<Proceso> getProcesosListos() { return procesosListos; }
     public Queue<Proceso> getProcesosEnSwap() { return procesosEnSwap; }
     public Queue<Proceso> getProcesosEnColaEspera() { return procesosEnColaEspera; }

@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.CheckBox;
 
 public class InicioController {
     @FXML private Button btnAñadir;
@@ -23,6 +24,7 @@ public class InicioController {
     @FXML private Button btnProgramasGrandes;
     @FXML private Button btnEscenarioQuantumBajo;
     @FXML private Button btnSwapLimitado;
+    @FXML private Button btnSwapInteligente;
     @FXML private Button btnSJF;
     @FXML private TextField txtDuracion;
     @FXML private TextField txtSlot;
@@ -31,11 +33,12 @@ public class InicioController {
     @FXML private TextField txtNombrePrograma;
     @FXML private Label lblEstado;
 
-    // NUEVOS: Controles para configurar SWAP
+    // Controles para configurar SWAP
     @FXML private ToggleButton toggleSwapLimitado;
     @FXML private Slider sliderTamañoSwap;
     @FXML private Label lblTamañoSwap;
     @FXML private Label lblEstadoSwap;
+    @FXML private CheckBox checkSwapInteligente;
 
     Controlador controlador;
     HelloController controladorProcesos;
@@ -60,11 +63,8 @@ public class InicioController {
         this.SJF = false;
         this.controladorProcesos = null;
 
-        // Configurar controles de SWAP
         configurarControlesSwap();
         actualizarEstilosAlgoritmos();
-
-        // CONFIGURAR EL COLOR DEL LABEL PARA MEJOR VISIBILIDAD
         configurarEstiloLabel();
 
         mostrarAviso("Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos.", "#10b981");
@@ -83,16 +83,23 @@ public class InicioController {
         // Configurar slider (rango 256-1024 slots)
         sliderTamañoSwap.setMin(256);
         sliderTamañoSwap.setMax(1024);
-        sliderTamañoSwap.setValue(512); // Valor por defecto
+        sliderTamañoSwap.setValue(512);
 
-        // Listener para el slider
+        // NUEVO: Configurar checkbox para SWAP inteligente
+        if (checkSwapInteligente != null) {
+            checkSwapInteligente.setSelected(true); // Por defecto activado
+            checkSwapInteligente.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                actualizarConfiguracionSwap();
+            });
+        }
+
+        // Listeners existentes
         sliderTamañoSwap.valueProperty().addListener((observable, oldValue, newValue) -> {
             int tamaño = newValue.intValue();
             lblTamañoSwap.setText(tamaño + " slots");
             actualizarConfiguracionSwap();
         });
 
-        // Listener para el toggle
         toggleSwapLimitado.selectedProperty().addListener((observable, oldValue, newValue) -> {
             actualizarConfiguracionSwap();
         });
@@ -105,6 +112,7 @@ public class InicioController {
     private void actualizarConfiguracionSwap() {
         boolean limitado = toggleSwapLimitado.isSelected();
         int tamaño = (int) sliderTamañoSwap.getValue();
+        boolean inteligente = checkSwapInteligente != null ? checkSwapInteligente.isSelected() : true;
 
         // Actualizar interfaz
         sliderTamañoSwap.setDisable(!limitado);
@@ -113,19 +121,65 @@ public class InicioController {
         if (limitado) {
             toggleSwapLimitado.setText("LIMITADO");
             toggleSwapLimitado.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;");
-            lblEstadoSwap.setText("SWAP Limitado: " + tamaño + " slots");
-            lblEstadoSwap.setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
+            lblEstadoSwap.setText("SWAP Limitado: " + tamaño + " slots" +
+                    (inteligente ? " | Modo: INTELIGENTE" : " | Modo: BÁSICO"));
+            lblEstadoSwap.setStyle("-fx-text-fill: " + (inteligente ? "#27ae60" : "#e67e22") + "; -fx-font-weight: bold;");
         } else {
             toggleSwapLimitado.setText("ILIMITADO");
             toggleSwapLimitado.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
-            lblEstadoSwap.setText("SWAP Ilimitado (crece automáticamente)");
+            lblEstadoSwap.setText("SWAP Ilimitado" +
+                    (inteligente ? " | Modo: INTELIGENTE" : " | Modo: BÁSICO"));
             lblEstadoSwap.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
         }
 
         // Configurar controlador
         if (controlador != null) {
             controlador.configurarSwap(limitado, tamaño);
+            controlador.configurarSwapInteligente(inteligente);
         }
+    }
+
+    @FXML
+    void crearSwapInteligente(ActionEvent event) {
+        // Activar SWAP inteligente
+        if (checkSwapInteligente != null) {
+            checkSwapInteligente.setSelected(true);
+        }
+
+        // Crear escenario que demuestre SWAP bidireccional
+        Random random = new Random();
+
+        // Procesos grandes que van a SWAP inicialmente
+        for (int i = 0; i < 3; i++) {
+            int duracion = 15 + random.nextInt(10);
+            int tiempoLlegada = i;
+            int tamanioSlot = 200 + random.nextInt(100);
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+        }
+
+        // Procesos pequeños prioritarios que llegan después
+        for (int i = 3; i < 8; i++) {
+            int duracion = 3 + random.nextInt(5);
+            int tiempoLlegada = 5 + i;
+            int tamanioSlot = 20 + random.nextInt(30);
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+        }
+
+        // Procesos de tamaño medio que llegan al final
+        for (int i = 8; i < 12; i++) {
+            int duracion = 8 + random.nextInt(8);
+            int tiempoLlegada = 12 + i;
+            int tamanioSlot = 80 + random.nextInt(60);
+
+            Proceso proceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+            controlador.agregarProcesoAlSistema(proceso);
+        }
+
+        mostrarAviso("Escenario SWAP Inteligente: Procesos grandes → pequeños prioritarios → medianos. Verás intercambio bidireccional.", "#9b59b6");
     }
 
     private void mostrarAviso(String mensaje, String color) {
@@ -175,23 +229,17 @@ public class InicioController {
 
     private void agregarPrograma(String nombrePrograma, int duracion, int tiempoLlegada, int tamanioPrograma) {
         if (tamanioPrograma <= TAMAÑO_MAXIMO_PROCESO) {
-            // Programa pequeño - NO se divide pero SÍ conserva el nombre
             System.out.println("📄 Programa pequeño: " + nombrePrograma + " (" + tamanioPrograma + " slots) - No se divide");
 
             Proceso programa = new Proceso(duracion, tiempoLlegada, tamanioPrograma);
-
-            // IMPORTANTE: Asignar el nombre personalizado después de crear el proceso
-            programa.setNombrePersonalizado(nombrePrograma); // Usando el setter que agregamos antes
-
+            programa.setNombrePersonalizado(nombrePrograma);
             controlador.agregarProcesoAlSistema(programa);
 
         } else {
-            // Programa grande - SÍ se divide automáticamente
             System.out.println("📦 Programa grande: " + nombrePrograma + " (" + tamanioPrograma + " slots) - Se divide automáticamente");
 
             Proceso programaPadre = new Proceso(nombrePrograma, duracion, tiempoLlegada, tamanioPrograma);
             List<Proceso> procesosHijos = programaPadre.dividirPrograma(TAMAÑO_MAXIMO_PROCESO);
-
 
             for (Proceso procesoHijo : procesosHijos) {
                 controlador.agregarProcesoAlSistema(procesoHijo);
@@ -262,24 +310,6 @@ public class InicioController {
         }
 
         mostrarAviso("Escenario extremo creado: 10 procesos para swapping intensivo.", "#e74c3c");
-    }
-
-    @FXML
-    void crearProcesosConHijos(ActionEvent event) {
-        Random random = new Random();
-        int cantidadProcesos = 3 + random.nextInt(2);
-
-        for (int i = 0; i < cantidadProcesos; i++) {
-            int duracion = 8 + random.nextInt(7);
-            int tiempoLlegada = i * 2;
-            int tamanioSlot = 40 + random.nextInt(40);
-
-            Proceso procesoPadre = new Proceso(duracion, tiempoLlegada, tamanioSlot);
-            procesoPadre.habilitarCreacionHijos();
-            controlador.agregarProcesoAlSistema(procesoPadre);
-        }
-
-        mostrarAviso(cantidadProcesos + " procesos padre creados. Podrán generar hijos durante ejecución.", "#9b59b6");
     }
 
     @FXML

@@ -63,6 +63,8 @@ public class Core extends Thread {
                     tiempoEjecucion++;
                     proceso_ejecucion.incrementarTiempoCpuAcumulado();
 
+                    controlador.registrarEjecucionProceso(proceso_ejecucion.getId());
+
                     System.out.println("Core " + id + " ejecutando " + proceso_ejecucion.getId() +
                             " - Duración restante: " + nuevaDuracion);
 
@@ -78,6 +80,9 @@ public class Core extends Thread {
                     // Verificar preempción por quantum (Round Robin)
                     if (controlador.algoritmo == TipoAlgoritmo.RR && controlador.quantum > 0 &&
                             tiempoEjecucion >= controlador.quantum) {
+
+                        System.out.println("🔄 PREEMPCIÓN RR: " + proceso_ejecucion.getId() +
+                                " quantum agotado (" + controlador.quantum + " unidades)");
 
                         proceso_ejecucion.setEstado(EstadoProceso.ESPERA);
                         proceso_ejecucion.setUltimaEntradaColaListos(controlador.getTiempoActual());
@@ -103,6 +108,9 @@ public class Core extends Thread {
 
                         proceso_ejecucion.setTiempoDeRetorno(tiempoRetorno);
                         proceso_ejecucion.setTiempoDeEspera(Math.max(0, tiempoEspera));
+
+                        System.out.println("✅ TERMINADO: " + proceso_ejecucion.getId() +
+                                " (TR:" + tiempoRetorno + ", TE:" + tiempoEspera + ")");
 
                         synchronized (controlador) {
                             controlador.agregarProcesoTerminado(proceso_ejecucion);
@@ -148,6 +156,10 @@ public class Core extends Thread {
             this.ocupado = true;
             this.tiempoEjecucion = 0;
             proceso.setEstado(EstadoProceso.EJECUCION);
+
+            // NUEVO: Registrar que el proceso inicia ejecución
+            controlador.registrarEjecucionProceso(proceso.getId());
+
             return true;
         }
         return false;
@@ -187,6 +199,8 @@ public class Core extends Thread {
                 if (procesoHijo != null) {
                     if (controlador.agregarProcesoHijoAlSistema(procesoHijo)) {
                         hijosCreados++;
+                        System.out.println("👶 FORK: " + proceso_ejecucion.getId() +
+                                " creó hijo " + procesoHijo.getId());
                     }
                 } else {
                     break;
