@@ -12,6 +12,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.scene.control.TableRow;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,11 +31,71 @@ public class EstadisticasController {
     private ObservableList<ProcesoEstadistica> listaEstadisticas;
     private Controlador controlador;
 
+
     @FXML
     public void initialize() {
         configurarTabla();
         listaEstadisticas = FXCollections.observableArrayList();
         tablaProcesos.setItems(listaEstadisticas);
+        aplicarEstilosTabla();
+    }
+
+
+
+    private void aplicarEstilosTabla() {
+        // Aplicar estilos CSS a la tabla
+        tablaProcesos.setStyle(
+                "-fx-background-color: #374151; " +
+                        "-fx-border-color: #10b981; " +
+                        "-fx-border-radius: 10; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-background-radius: 10; " +
+                        "-fx-text-fill: white;"
+        );
+
+        // Aplicar estilos a las columnas
+        String columnStyle =
+                "-fx-background-color: #4b5563; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-alignment: CENTER;";
+
+        columnaProcesos.setStyle(columnStyle);
+        columnaRespuesta.setStyle(columnStyle);
+        columnaEspera.setStyle(columnStyle);
+        columnaRetorno.setStyle(columnStyle);
+
+        // Aplicar estilos a las filas de datos
+        tablaProcesos.setRowFactory(tv -> {
+            TableRow<ProcesoEstadistica> row = new TableRow<>();
+            row.setStyle(
+                    "-fx-background-color: #374151; " +
+                            "-fx-text-fill: white; " +
+                            "-fx-border-color: #4b5563;"
+            );
+
+            row.setOnMouseEntered(e -> {
+                if (!row.isEmpty()) {
+                    row.setStyle(
+                            "-fx-background-color: #4b5563; " +
+                                    "-fx-text-fill: white; " +
+                                    "-fx-border-color: #10b981;"
+                    );
+                }
+            });
+
+            row.setOnMouseExited(e -> {
+                if (!row.isEmpty()) {
+                    row.setStyle(
+                            "-fx-background-color: #374151; " +
+                                    "-fx-text-fill: white; " +
+                                    "-fx-border-color: #4b5563;"
+                    );
+                }
+            });
+
+            return row;
+        });
     }
 
     private void configurarTabla() {
@@ -146,10 +207,11 @@ public class EstadisticasController {
 
             // Cargar pantalla de inicio
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("inicio.fxml"));
-            Scene newScene = new Scene(fxmlLoader.load(), 1080, 720);
+            Scene newScene = new Scene(fxmlLoader.load());
 
             Stage stage = (Stage) btnProcesos.getScene().getWindow();
             stage.setScene(newScene);
+            stage.setMaximized(true); // AGREGADO: Mantener maximizada
 
             System.out.println("Navegación al inicio completada");
 

@@ -1,82 +1,203 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.EstadisticasController">
+<VBox prefHeight="800.0" prefWidth="1536.0" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom right, #111827, #1f2937, #000000); -fx-padding: 25;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.EstadisticasController">
     <children>
-        <AnchorPane prefHeight="720.0" prefWidth="1125.0">
+        <!-- Header -->
+        <VBox alignment="CENTER" prefHeight="100.0" spacing="15.0">
             <children>
-                <Text layoutX="100.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADISTICAS GENERALES" wrappingWidth="160.0">
+                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="📊 ESTADÍSTICAS DE SIMULACIÓN" textAlignment="CENTER">
                     <font>
-                        <Font name="System Bold" size="22.0" />
+                        <Font name="Consolas Bold" size="32.0" />
                     </font>
                 </Text>
-                <Text layoutX="370.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="En promedio:">
+                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Análisis de rendimiento y tiempos de los procesos ejecutados" textAlignment="CENTER">
                     <font>
-                        <Font name="System Bold" size="18.0" />
+                        <Font name="Consolas" size="16.0" />
                     </font>
                 </Text>
-                <Text layoutX="370.0" layoutY="190.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de respuesta:">
+            </children>
+        </VBox>
+
+        <!-- Main Content Grid -->
+        <GridPane hgap="25.0" prefHeight="600.0" prefWidth="1476.0" vgap="25.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints maxHeight="471.0" minHeight="10.0" prefHeight="265.4000244140625" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="378.19998168945307" minHeight="10.0" prefHeight="300.59997558593744" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <!-- General Statistics Section -->
+                <VBox prefHeight="354.0" prefWidth="1475.0" spacing="20.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="15.0">
+                            <children>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="📈">
+                                    <font>
+                                        <Font size="28.0" />
+                                    </font>
+                                </Text>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADÍSTICAS GENERALES">
+                                    <font>
+                                        <Font name="Consolas Bold" size="24.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </HBox>
+
+                        <Separator prefWidth="200.0" style="-fx-background-color: #10b981;" />
+
+                        <GridPane hgap="30.0" vgap="20.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="33.33" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="33.33" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="33.33" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <!-- Response Time Card -->
+                                <VBox alignment="CENTER" prefHeight="154.0" prefWidth="483.0" spacing="8.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 20; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 2;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="⚡" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="24.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="TIEMPO DE RESPUESTA" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#d1fae5" strokeType="OUTSIDE" strokeWidth="0.0" text="En promedio:" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fx:id="txtRespuesta" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="0.00 unidades" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="18.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </VBox>
+
+                                <!-- Wait Time Card -->
+                                <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 20; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 2;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="⏰" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="24.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="TIEMPO DE ESPERA" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#d1fae5" strokeType="OUTSIDE" strokeWidth="0.0" text="En promedio:" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fx:id="txtEspera" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="0.00 unidades" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="18.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </VBox>
+
+                                <!-- Turnaround Time Card -->
+                                <VBox alignment="CENTER" spacing="8.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 20; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 2;" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="🔄" textAlignment="CENTER">
+                                            <font>
+                                                <Font size="24.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="TIEMPO DE RETORNO" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#d1fae5" strokeType="OUTSIDE" strokeWidth="0.0" text="En promedio:" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fx:id="txtRetorno" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="0.00 unidades" textAlignment="CENTER">
+                                            <font>
+                                                <Font name="Consolas Bold" size="18.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </GridPane>
+                    </children>
+                </VBox>
+
+                <!-- Individual Statistics Section -->
+                <VBox spacing="20.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="15.0">
+                            <children>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="📋">
+                                    <font>
+                                        <Font size="28.0" />
+                                    </font>
+                                </Text>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADÍSTICAS INDIVIDUALES">
+                                    <font>
+                                        <Font name="Consolas Bold" size="24.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </HBox>
+
+                        <Separator prefWidth="200.0" style="-fx-background-color: #10b981;" />
+
+                        <TableView fx:id="tablaProcesos" prefHeight="300.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-radius: 10; -fx-border-width: 2; -fx-background-radius: 10;">
+                            <columns>
+                                <TableColumn fx:id="columnaProcesos" prefWidth="360.0" text="🔧 Proceso" style="-fx-background-color: #4b5563; -fx-text-fill: white;" />
+                                <TableColumn fx:id="columnaRespuesta" prefWidth="360.0" text="⚡ Tiempo de Respuesta" style="-fx-background-color: #4b5563; -fx-text-fill: white;" />
+                                <TableColumn fx:id="columnaEspera" prefWidth="360.0" text="⏰ Tiempo de Espera" style="-fx-background-color: #4b5563; -fx-text-fill: white;" />
+                                <TableColumn fx:id="columnaRetorno" prefWidth="360.0" text="🔄 Tiempo de Retorno" style="-fx-background-color: #4b5563; -fx-text-fill: white;" />
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+            </children>
+        </GridPane>
+
+        <!-- Navigation Section -->
+        <VBox alignment="CENTER" prefHeight="80.0" spacing="20.0">
+            <children>
+                <Button fx:id="btnProcesos" alignment="CENTER" mnemonicParsing="false" onAction="#irInicio" prefHeight="50.0" prefWidth="280.0" style="-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 15;" text="🏠 VOLVER AL INICIO" textAlignment="CENTER">
                     <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text layoutX="370.0" layoutY="230.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de espera:">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text layoutX="370.0" layoutY="270.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de retorno:">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text layoutY="336.0" strokeType="OUTSIDE" strokeWidth="0.0" text="................................................................................................................................................" textAlignment="RIGHT" wrappingWidth="1125.0">
-                    <font>
-                        <Font size="36.0" />
-                    </font>
-                </Text>
-                <Text fx:id="txtRespuesta" layoutX="620.0" layoutY="190.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Respuesta 1">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text fx:id="txtEspera" layoutX="620.0" layoutY="230.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Respuesta 2">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text fx:id="txtRetorno" layoutX="620.0" layoutY="270.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Respuesta 3">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text layoutX="100.0" layoutY="528.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ESTADISTICAS INDIVIDUALES" wrappingWidth="160.0">
-                    <font>
-                        <Font name="System Bold" size="22.0" />
-                    </font>
-                </Text>
-                <TableView fx:id="tablaProcesos" layoutX="346.0" layoutY="379.0" prefHeight="273.0" prefWidth="560.0">
-                    <columns>
-                        <TableColumn fx:id="columnaProcesos" prefWidth="140.0" text="Procesos" />
-                        <TableColumn fx:id="columnaRespuesta" prefWidth="140.0" text="Tiempo De Respuesta" />
-                        <TableColumn fx:id="columnaEspera" prefWidth="140.0" text="Tiempo De Espera" />
-                        <TableColumn fx:id="columnaRetorno" prefWidth="140.0" text="Tiempo De Retorno" />
-                    </columns>
-                </TableView>
-                <Button fx:id="btnProcesos" alignment="CENTER" contentDisplay="TOP" layoutX="933.0" layoutY="623.0" mnemonicParsing="false" onAction="#irInicio" prefHeight="72.0" prefWidth="127.0" style="-fx-background-color: #280EAD;" text="IR A CREAR PROCESOS" textAlignment="CENTER" textFill="WHITE" wrapText="true">
-                    <font>
-                        <Font name="System Bold" size="18.0" />
+                        <Font name="Consolas Bold" size="18.0" />
                     </font>
                 </Button>
             </children>
-        </AnchorPane>
+        </VBox>
     </children>
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
 </VBox>

@@ -1,214 +1,337 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="720.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
+<VBox prefHeight="800.0" prefWidth="1536.0" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom right, #111827, #1f2937, #000000); -fx-padding: 25;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.InicioController">
     <children>
-        <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="720.0" prefWidth="1125.0" VBox.vgrow="ALWAYS">
+        <!-- Header -->
+        <VBox alignment="CENTER" prefHeight="120.0" spacing="15.0">
             <children>
-                <!-- Label para avisos de estado -->
-                <Label fx:id="lblEstado" layoutX="50.0" layoutY="25.0" prefHeight="25.0" prefWidth="700.0" text="✓ Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos." textFill="#2c3e50" wrapText="true">
+                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="SIMULADOR DE PROCESOS" textAlignment="CENTER">
                     <font>
-                        <Font size="14.0" />
-                    </font>
-                </Label>
-
-                <!-- NUEVA SECCIÓN: Configuración de SWAP -->
-                <Text layoutX="50.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CONFIGURACIÓN SWAP:" wrappingWidth="200.0">
-                    <font>
-                        <Font name="System Bold" size="18.0" />
+                        <Font name="Consolas Bold" size="36.0" />
                     </font>
                 </Text>
-
-                <!-- Toggle Button para SWAP Limitado/Ilimitado -->
-                <ToggleButton fx:id="toggleSwapLimitado" layoutX="260.0" layoutY="60.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="120.0" selected="true" text="LIMITADO">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </ToggleButton>
-
-                <!-- Slider para tamaño de SWAP -->
-                <Text layoutX="400.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño:">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Text>
-                <Slider fx:id="sliderTamañoSwap" layoutX="460.0" layoutY="65.0" prefWidth="150.0" />
-                <Label fx:id="lblTamañoSwap" layoutX="620.0" layoutY="70.0" text="512 slots">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </Label>
-
-                <!-- Estado actual de SWAP -->
-                <Label fx:id="lblEstadoSwap" layoutX="260.0" layoutY="100.0" prefWidth="400.0" text="SWAP Limitado: 512 slots" textFill="#e67e22">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Label>
-
-                <Text layoutX="187.0" layoutY="203.0" strokeType="OUTSIDE" strokeWidth="0.0" text="AÑADIR PROCESO:" wrappingWidth="113.39999999999986">
-                    <font>
-                        <Font name="System Bold" size="22.0" />
-                    </font>
-                </Text>
-
-                <Text layoutX="400.0" layoutY="130.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nombre programa:" textAlignment="RIGHT" wrappingWidth="163.336669921875">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <TextField fx:id="txtNombrePrograma" layoutX="610.0" layoutY="110.0" promptText="(Opcional - para programas grandes)" style="-fx-border-color: #9b59b6;" />
-
-                <Text layoutX="430.0" layoutY="170.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño de Slot:" textAlignment="RIGHT" wrappingWidth="133.336669921875">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text layoutX="440.0" layoutY="230.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Duración:" textAlignment="RIGHT" wrappingWidth="120.53668212890625">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-                <Text layoutX="410.0" layoutY="290.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de llegada:" textAlignment="RIGHT" wrappingWidth="152.53668212890625">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Text>
-
-                <TextField fx:id="txtSlot" layoutX="610.0" layoutY="150.0" style="-fx-border-color: #5284FF;" />
-                <TextField fx:id="txtDuracion" layoutX="610.0" layoutY="210.0" style="-fx-border-color: #5284FF;" />
-                <TextField fx:id="txtTiempo" layoutX="610.0" layoutY="270.0" style="-fx-border-color: #5284FF;" />
-
-                <Button fx:id="btnRandom" layoutX="831.0" layoutY="120.0" mnemonicParsing="false" onAction="#crearRandom" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="RANDOM NORMAL" textFill="WHITE">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnRandomGrande" layoutX="831.0" layoutY="165.0" mnemonicParsing="false" onAction="#crearRandomGrande" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #e67e22; -fx-background-radius: 15;" text="RANDOM GRANDE" textFill="WHITE">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnEscenarioExtremo" layoutX="831.0" layoutY="210.0" mnemonicParsing="false" onAction="#crearEscenarioExtremo" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #e74c3c; -fx-background-radius: 15;" text="ESCENARIO EXTREMO" textFill="WHITE" wrapText="true">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnProcesosConHijos" layoutX="831.0" layoutY="255.0" mnemonicParsing="false" onAction="#crearProcesosConHijos" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #9b59b6; -fx-background-radius: 15;" text="PROCESOS CON HIJOS" textFill="WHITE" wrapText="true">
-                    <font>
-                        <Font size="11.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnProgramasGrandes" layoutX="831.0" layoutY="300.0" mnemonicParsing="false" onAction="#crearProgramasGrandes" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #2c3e50; -fx-background-radius: 15;" text="PROGRAMAS GRANDES" textFill="WHITE" wrapText="true">
-                    <font>
-                        <Font size="11.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnEscenarioQuantumBajo" layoutX="831.0" layoutY="345.0" mnemonicParsing="false" onAction="#crearEscenarioQuantumBajo" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #16a085; -fx-background-radius: 15;" text="QUANTUM BAJO" textFill="WHITE" wrapText="true">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnSwapLimitado" layoutX="831.0" layoutY="390.0" mnemonicParsing="false" onAction="#crearSwapLimitado" prefHeight="35.0" prefWidth="150.0" style="-fx-background-color: #8e44ad; -fx-background-radius: 15;" text="SWAP LIMITADO" textFill="WHITE" wrapText="true">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnAñadir" layoutX="610.0" layoutY="333.0" mnemonicParsing="false" onAction="#añadirProceso" prefHeight="26.0" prefWidth="90.0" style="-fx-background-color: #5284FF; -fx-background-radius: 15;" text="AÑADIR">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Button>
-
-                <Text layoutX="599.0" layoutY="52.0" strokeType="OUTSIDE" strokeWidth="0.0" text="INICIO" wrappingWidth="113.0">
-                    <font>
-                        <Font name="System Bold" size="36.0" />
-                    </font>
-                </Text>
-                <Text layoutY="470.0" strokeType="OUTSIDE" strokeWidth="0.0" text="................................................................................................................................................" textAlignment="RIGHT" wrappingWidth="1125.0">
-                    <font>
-                        <Font size="36.0" />
-                    </font>
-                </Text>
-
-                <Text layoutX="180.0" layoutY="531.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ALGORITMOS:" wrappingWidth="151.800048828125">
-                    <font>
-                        <Font name="System Bold" size="22.0" />
-                    </font>
-                </Text>
-
-                <Button fx:id="btnRR" layoutX="463.0" layoutY="503.0" mnemonicParsing="false" onAction="#seleccionarRR" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;" text="ROUND ROBIN">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnInicio" layoutX="826.0" layoutY="638.0" mnemonicParsing="false" onAction="#iniciarSimulacion" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: #280EAD; -fx-background-radius: 0;" text="INICIAR SIMULACION" textFill="WHITE">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Button>
-
-                <Button fx:id="btnSJF" layoutX="678.0" layoutY="503.0" mnemonicParsing="false" onAction="#seleccionarSJF" prefHeight="40.0" prefWidth="150.0" style="-fx-background-color: #5284FF; -fx-text-fill: white; -fx-background-radius: 15;" text="SJF">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Button>
-
-                <Text fill="#666666" layoutX="1000.0" layoutY="137.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos pequeños">
-                    <font>
-                        <Font size="12.0" />
-                    </font>
-                </Text>
-                <Text fill="#e67e22" layoutX="1000.0" layoutY="182.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Fuerza SWAP">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Text>
-                <Text fill="#e74c3c" layoutX="1000.0" layoutY="227.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Swapping intensivo">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Text>
-                <Text fill="#9b59b6" layoutX="1000.0" layoutY="272.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Crea procesos hijos">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Text>
-                <Text fill="#2c3e50" layoutX="1000.0" layoutY="317.0" strokeType="OUTSIDE" strokeWidth="0.0" text="División automática">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Text>
-                <Text fill="#16a085" layoutX="1000.0" layoutY="362.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Muchos cambios contexto">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Text>
-                <Text fill="#8e44ad" layoutX="1000.0" layoutY="407.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Cola de espera">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font>
-                </Text>
-
-                <TextField fx:id="txtQuantum" layoutX="462.0" layoutY="554.0" prefHeight="27.0" prefWidth="150.0" promptText="Quantum (4)" style="-fx-border-color: #5284FF;" />
+                <HBox alignment="CENTER" spacing="10.0">
+                    <children>
+                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="✓">
+                            <font>
+                                <Font name="Consolas Bold" size="18.0" />
+                            </font>
+                        </Text>
+                        <Label fx:id="lblEstado" alignment="CENTER" style="-fx-background-color: transparent;" text="Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos." textFill="WHITE" wrapText="true">
+                            <font>
+                                <Font name="Consolas Bold" size="16.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </HBox>
             </children>
-        </AnchorPane>
+        </VBox>
+
+        <!-- Main Content Grid - Recuadros más altos -->
+        <GridPane hgap="25.0" prefHeight="824.0" prefWidth="1230.0" vgap="25.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="260.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="260.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <!-- SWAP Configuration -->
+                <VBox spacing="20.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <children>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="CONFIGURACIÓN SWAP">
+                                    <font>
+                                        <Font name="Consolas Bold" size="20.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </HBox>
+                        <VBox spacing="25.0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                    <children>
+                                        <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Modo:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="17.0" />
+                                            </font>
+                                        </Text>
+                                        <ToggleButton fx:id="toggleSwapLimitado" mnemonicParsing="false" prefHeight="40.0" prefWidth="130.0" selected="true" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 18; -fx-border-radius: 18; -fx-min-width: 130px; -fx-max-width: 130px; -fx-min-height: 40px; -fx-max-height: 40px;" text="LIMITADO">
+                                            <font>
+                                                <Font name="Consolas Bold" size="15.0" />
+                                            </font>
+                                        </ToggleButton>
+                                    </children>
+                                </HBox>
+                                <VBox spacing="15.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                            <children>
+                                                <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño:">
+                                                    <font>
+                                                        <Font name="Consolas Bold" size="17.0" />
+                                                    </font>
+                                                </Text>
+                                                <Label fx:id="lblTamañoSwap" text="512 slots" textFill="#10b981">
+                                                    <font>
+                                                        <Font name="Consolas Bold" size="16.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="sliderTamañoSwap" prefHeight="30.0" prefWidth="300.0" style="-fx-control-inner-background: #374151;" />
+                                    </children>
+                                </VBox>
+                                <Label fx:id="lblEstadoSwap" style="-fx-background-color: #064e3b; -fx-background-radius: 8; -fx-padding: 12; -fx-border-color: #10b981; -fx-border-radius: 8; -fx-border-width: 1;" text="SWAP Limitado: 512 slots" textFill="#10b981">
+                                    <font>
+                                        <Font name="Consolas Bold" size="15.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- Add Process - MÁS ESPACIO VERTICAL -->
+                <VBox spacing="25.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="1.0" prefWidth="548.0" spacing="12.0">
+                            <children>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="AÑADIR PROCESO">
+                                    <font>
+                                        <Font name="Consolas Bold" size="20.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </HBox>
+                        <VBox spacing="20.0">
+                            <children>
+                                <VBox spacing="12.0">
+                                    <children>
+                                        <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Nombre programa (Opcional)">
+                                            <font>
+                                                <Font name="Consolas Bold" size="15.0" />
+                                            </font>
+                                        </Text>
+                                        <TextField fx:id="txtNombrePrograma" prefHeight="40.0" promptText="Para programas grandes" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 6; -fx-text-fill: white; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #10b981; -fx-font-size: 15;" />
+                                    </children>
+                                </VBox>
+                                <GridPane hgap="20.0" vgap="20.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="80.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="80.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <children>
+                                        <VBox spacing="12.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                            <children>
+                                                <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño de Slot *">
+                                                    <font>
+                                                        <Font name="Consolas Bold" size="14.0" />
+                                                    </font>
+                                                </Text>
+                                                <TextField fx:id="txtSlot" prefHeight="40.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 6; -fx-text-fill: white; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #10b981; -fx-font-size: 15;" />
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="12.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                            <children>
+                                                <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Duración *">
+                                                    <font>
+                                                        <Font name="Consolas Bold" size="14.0" />
+                                                    </font>
+                                                </Text>
+                                                <TextField fx:id="txtDuracion" prefHeight="40.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 6; -fx-text-fill: white; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #10b981; -fx-font-size: 15;" />
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="12.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                            <children>
+                                                <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de llegada *">
+                                                    <font>
+                                                        <Font name="Consolas Bold" size="14.0" />
+                                                    </font>
+                                                </Text>
+                                                <TextField fx:id="txtTiempo" prefHeight="40.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 6; -fx-text-fill: white; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #10b981; -fx-font-size: 15;" />
+                                            </children>
+                                        </VBox>
+                                        <VBox alignment="BOTTOM_CENTER" spacing="12.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                            <children>
+                                                <Region />
+                                                <Button fx:id="btnAñadir" mnemonicParsing="false" onAction="#añadirProceso" prefHeight="45.0" prefWidth="160.0" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 45px; -fx-max-height: 45px; -fx-font-size: 14px;" text="AÑADIR PROCESO">
+                                                    <font>
+                                                        <Font name="Consolas Bold" size="14.0" />
+                                                    </font>
+                                                </Button>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </GridPane>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- Algoritmos -->
+                <VBox prefHeight="310.0" prefWidth="598.0" spacing="25.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <children>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0">
+                                    <font>
+                                        <Font size="28.0" />
+                                    </font>
+                                </Text>
+                                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="ALGORITMOS">
+                                    <font>
+                                        <Font name="Consolas Bold" size="20.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </HBox>
+                        <VBox spacing="25.0">
+                            <children>
+                                <HBox spacing="15.0">
+                                    <children>
+                                        <Button fx:id="btnRR" mnemonicParsing="false" onAction="#seleccionarRR" prefHeight="50.0" prefWidth="150.0" style="-fx-background-color: transparent; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-min-width: 150px; -fx-max-width: 150px; -fx-min-height: 50px; -fx-max-height: 50px; -fx-font-size: 14px;" text="ROUND ROBIN">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </Button>
+                                        <Button fx:id="btnSJF" mnemonicParsing="false" onAction="#seleccionarSJF" prefHeight="50.0" prefWidth="150.0" style="-fx-background-color: transparent; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-min-width: 150px; -fx-max-width: 150px; -fx-min-height: 50px; -fx-max-height: 50px; -fx-font-size: 15px;" text="SJF">
+                                            <font>
+                                                <Font name="Consolas Bold" size="15.0" />
+                                            </font>
+                                        </Button>
+                                    </children>
+                                </HBox>
+                                <VBox spacing="15.0">
+                                    <children>
+                                        <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="Quantum para Round Robin">
+                                            <font>
+                                                <Font name="Consolas Bold" size="16.0" />
+                                            </font>
+                                        </Text>
+                                        <TextField fx:id="txtQuantum" prefHeight="40.0" prefWidth="267.0" promptText="4" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 6; -fx-text-fill: white; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #10b981; -fx-font-size: 16;" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- Procesos Preset -->
+                <VBox spacing="25.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <children>
+                        <VBox spacing="15.0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0">
+                                            <font>
+                                                <Font size="28.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="GENERACIÓN RÁPIDA">
+                                            <font>
+                                                <Font name="Consolas Bold" size="20.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fill="#9ca3af" strokeType="OUTSIDE" strokeWidth="0.0" text="Genera procesos predefinidos para diferentes escenarios">
+                                    <font>
+                                        <Font name="Consolas" size="14.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
+                        <!-- Botones con más espacio vertical -->
+                        <GridPane hgap="12.0" vgap="18.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <Button fx:id="btnRandom" mnemonicParsing="false" onAction="#crearRandom" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 12px;" text="RANDOM NORMAL" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <font>
+                                        <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnRandomGrande" mnemonicParsing="false" onAction="#crearRandomGrande" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #ea580c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 12px;" text="RANDOM GRANDE" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <font>
+                                        <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnEscenarioExtremo" mnemonicParsing="false" onAction="#crearEscenarioExtremo" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 11px;" text="ESCENARIO EXTREMO" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                    <font>
+                                        <Font name="Consolas Bold" size="11.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnProcesosConHijos" mnemonicParsing="false" onAction="#crearProcesosConHijos" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #7c3aed; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 11px;" text="PROCESOS CON HIJOS" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <font>
+                                        <Font name="Consolas Bold" size="11.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnProgramasGrandes" mnemonicParsing="false" onAction="#crearProgramasGrandes" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #374151; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 11px;" text="PROGRAMAS GRANDES" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                    <font>
+                                        <Font name="Consolas Bold" size="11.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnEscenarioQuantumBajo" mnemonicParsing="false" onAction="#crearEscenarioQuantumBajo" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #0d9488; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 12px;" text="QUANTUM BAJO" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <font>
+                                        <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="btnSwapLimitado" mnemonicParsing="false" onAction="#crearSwapLimitado" prefHeight="38.0" prefWidth="160.0" style="-fx-background-color: #4338ca; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-min-width: 160px; -fx-max-width: 160px; -fx-min-height: 38px; -fx-max-height: 38px; -fx-font-size: 12px;" text="SWAP LIMITADO" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                                    <font>
+                                        <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Button>
+                            </children>
+                        </GridPane>
+                    </children>
+                </VBox>
+            </children>
+        </GridPane>
+
+        <!-- Botón de Inicio - Aprovechando el espacio inferior -->
+        <VBox alignment="CENTER" prefHeight="65.0" prefWidth="1232.0" spacing="15.0">
+            <children>
+                <Button fx:id="btnInicio" mnemonicParsing="false" onAction="#iniciarSimulacion" prefHeight="36.0" prefWidth="354.0" style="-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.4), 10, 0, 0, 3); -fx-min-width: 354px; -fx-max-width: 354px; -fx-min-height: 36px; -fx-max-height: 36px; -fx-font-size: 20px;" text="▶ INICIAR SIMULACIÓN">
+                    <font>
+                        <Font name="Consolas Bold" size="20.0" />
+                    </font>
+                </Button>
+            </children>
+        </VBox>
     </children>
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+    </padding>
 </VBox>

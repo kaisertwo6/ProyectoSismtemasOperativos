@@ -1,100 +1,296 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="650.0" prefWidth="800.0" style="-fx-background-color: #F5F5F5;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.VerProcesoController">
+<VBox prefHeight="800.0" prefWidth="950.0" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom right, #111827, #1f2937, #000000); -fx-padding: 25;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.VerProcesoController">
     <children>
-        <!-- Título del proceso -->
-        <Text fx:id="labelTitulo" layoutX="300.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="PROCESO 1" fill="#2c3e50">
-            <font>
-                <Font name="System Bold" size="36.0" />
-            </font>
-        </Text>
+        <!-- Header Section -->
+        <VBox alignment="CENTER" spacing="12.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;">
+            <children>
+                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="📋" textAlignment="CENTER">
+                    <font>
+                        <Font size="28.0" />
+                    </font>
+                </Text>
+                <Text fx:id="labelTitulo" fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="PROCESO 1" textAlignment="CENTER">
+                    <font>
+                        <Font name="Consolas Bold" size="24.0" />
+                    </font>
+                </Text>
+                <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Información detallada del proceso" textAlignment="CENTER">
+                    <font>
+                        <Font name="Consolas" size="12.0" />
+                    </font>
+                </Text>
+                <Separator prefWidth="200.0" style="-fx-background-color: #10b981;" />
+            </children>
+        </VBox>
 
-        <!-- Información del proceso -->
-        <Text layoutX="200.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de llegada:" fill="#34495e">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelLlegada" layoutX="450.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#2c3e50">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+        <!-- Main Information Section -->
+        <VBox spacing="20.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <children>
+                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="⚙️">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                        </Text>
+                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="INFORMACIÓN BÁSICA">
+                            <font>
+                                <Font name="Consolas Bold" size="18.0" />
+                            </font>
+                        </Text>
+                    </children>
+                </HBox>
 
-        <Text layoutX="200.0" layoutY="240.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de ejecución:" fill="#34495e">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelEjecucion" layoutX="450.0" layoutY="240.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#2c3e50">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+                <Separator prefWidth="200.0" style="-fx-background-color: #10b981;" />
 
-        <Text layoutX="200.0" layoutY="300.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de espera:" fill="#34495e">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelEspera" layoutX="450.0" layoutY="300.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#2c3e50">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+                <GridPane hgap="30.0" vgap="20.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <!-- Tiempo de llegada -->
+                        <VBox spacing="6.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 12; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="🕐">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de llegada:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelLlegada" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="...">
+                                    <font>
+                                        <Font name="Consolas Bold" size="16.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
 
-        <Text layoutX="200.0" layoutY="360.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de retorno:" fill="#34495e">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelRetorno" layoutX="450.0" layoutY="360.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#2c3e50">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+                        <!-- Tiempo de ejecución -->
+                        <VBox spacing="6.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 12; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="⚡">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de ejecución:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelEjecucion" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="...">
+                                    <font>
+                                        <Font name="Consolas Bold" size="16.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
 
-        <Text layoutX="200.0" layoutY="420.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño:" fill="#34495e">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelTamaño" layoutX="450.0" layoutY="420.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#2c3e50">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+                        <!-- Tiempo de espera -->
+                        <VBox spacing="6.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 12; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="⏰">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de espera:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelEspera" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="...">
+                                    <font>
+                                        <Font name="Consolas Bold" size="16.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
 
-        <!-- NUEVA INFORMACIÓN: Proceso Padre -->
-        <Text layoutX="200.0" layoutY="480.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Proceso padre:" fill="#8e44ad">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelProcesoPadre" layoutX="450.0" layoutY="480.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#8e44ad">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+                        <!-- Tiempo de retorno -->
+                        <VBox spacing="6.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 12; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="🔄">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Tiempo de retorno:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelRetorno" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="...">
+                                    <font>
+                                        <Font name="Consolas Bold" size="16.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
 
-        <!-- NUEVA INFORMACIÓN: Procesos Hijos -->
-        <Text layoutX="200.0" layoutY="540.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos hijos:" fill="#e67e22">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Text>
-        <Text fx:id="labelProcesosHijos" layoutX="450.0" layoutY="540.0" strokeType="OUTSIDE" strokeWidth="0.0" text="..." fill="#e67e22">
-            <font>
-                <Font size="18.0" />
-            </font>
-        </Text>
+                        <!-- Tamaño -->
+                        <VBox spacing="6.0" style="-fx-background-color: linear-gradient(to bottom, #064e3b, #065f46); -fx-background-radius: 12; -fx-padding: 12; -fx-border-color: #10b981; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="📦">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="Tamaño:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="12.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelTamaño" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="...">
+                                    <font>
+                                        <Font name="Consolas Bold" size="16.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
+                    </children>
+                </GridPane>
+            </children>
+        </VBox>
 
-        <!-- Botón Salir -->
-        <Button fx:id="btnSalir" layoutX="640.0" layoutY="570.0" mnemonicParsing="false" onAction="#cerrarVentana" prefHeight="40.0" prefWidth="100.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 5;" text="Salir" />
+        <!-- Process Hierarchy Section -->
+        <VBox spacing="20.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 25;">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <children>
+                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="🌳">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                        </Text>
+                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="JERARQUÍA DE PROCESOS">
+                            <font>
+                                <Font name="Consolas Bold" size="18.0" />
+                            </font>
+                        </Text>
+                    </children>
+                </HBox>
+
+                <Separator prefWidth="200.0" style="-fx-background-color: #10b981;" />
+
+                <GridPane hgap="30.0" vgap="20.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <!-- Proceso Padre -->
+                        <VBox spacing="10.0" style="-fx-background-color: linear-gradient(to bottom, #581c87, #6b21a8); -fx-background-radius: 12; -fx-padding: 15; -fx-border-color: #a855f7; -fx-border-radius: 12; -fx-border-width: 2;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#a855f7" strokeType="OUTSIDE" strokeWidth="0.0" text="👨‍💼">
+                                            <font>
+                                                <Font size="16.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#a855f7" strokeType="OUTSIDE" strokeWidth="0.0" text="Proceso padre:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelProcesoPadre" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="..." wrappingWidth="250.0">
+                                    <font>
+                                        <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
+
+                        <!-- Procesos Hijos -->
+                        <VBox spacing="10.0" style="-fx-background-color: linear-gradient(to bottom, #b45309, #d97706); -fx-background-radius: 12; -fx-padding: 15; -fx-border-color: #f59e0b; -fx-border-radius: 12; -fx-border-width: 2;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Text fill="#f59e0b" strokeType="OUTSIDE" strokeWidth="0.0" text="👶">
+                                            <font>
+                                                <Font size="16.0" />
+                                            </font>
+                                        </Text>
+                                        <Text fill="#f59e0b" strokeType="OUTSIDE" strokeWidth="0.0" text="Procesos hijos:">
+                                            <font>
+                                                <Font name="Consolas Bold" size="14.0" />
+                                            </font>
+                                        </Text>
+                                    </children>
+                                </HBox>
+                                <Text fx:id="labelProcesosHijos" fill="#ffffff" strokeType="OUTSIDE" strokeWidth="0.0" text="..." wrappingWidth="250.0">
+                                    <font>
+                                        <Font name="Consolas Bold" size="12.0" />
+                                    </font>
+                                </Text>
+                            </children>
+                        </VBox>
+                    </children>
+                </GridPane>
+            </children>
+        </VBox>
+
+        <!-- Navigation Section -->
+        <VBox alignment="CENTER" spacing="15.0">
+            <children>
+                <Button fx:id="btnSalir" alignment="CENTER" mnemonicParsing="false" onAction="#cerrarVentana" prefHeight="50.0" prefWidth="200.0" style="-fx-background-color: linear-gradient(to right, #dc2626, #b91c1c); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 15;" text="🚪 CERRAR" textAlignment="CENTER">
+                    <font>
+                        <Font name="Consolas Bold" size="16.0" />
+                    </font>
+                </Button>
+            </children>
+        </VBox>
     </children>
-</AnchorPane>
+
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+    </padding>
+</VBox>

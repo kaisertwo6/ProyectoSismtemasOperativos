@@ -28,6 +28,7 @@ public class HelloController extends Thread {
 
     private static HelloController instance;
 
+
     @FXML private Button botonTerminar;
     @FXML private Button botonPausar;
     @FXML private Label labelTiempoActual;
@@ -87,7 +88,16 @@ public class HelloController extends Thread {
         configurarTablas();
         inicializarInterfaz();
         configurarBotonesVelocidad();
+        configurarEstiloLabel();
     }
+
+    private void configurarEstiloLabel() {
+        // Cambiar el color del label de tiempo actual para mejor visibilidad
+        if (labelTiempoActual != null) {
+            labelTiempoActual.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: 'Consolas Bold';");
+        }
+    }
+
 
     private void configurarBotonesVelocidad() {
         btnVelocidadX1.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -158,7 +168,7 @@ public class HelloController extends Thread {
         columnaEstadoProceso.setCellFactory(column -> {
             return new TableCell<ProcesoInfo, String>() {
                 private final Circle circulo = new Circle(6);
-                private final Label labelEstado = new Label();
+                    private final Label labelEstado = new Label();
                 private final HBox contenedor = new HBox(8);
 
                 {
@@ -665,7 +675,7 @@ public class HelloController extends Thread {
 
     private void irAEstadisticas() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("estadisticas.fxml"));
-        Scene newScene = new Scene(fxmlLoader.load(), 1080, 720);
+        Scene newScene = new Scene(fxmlLoader.load());
 
         EstadisticasController estadisticasController = fxmlLoader.getController();
         if (controlador != null) {
@@ -674,6 +684,7 @@ public class HelloController extends Thread {
 
         Stage stage = (Stage) botonTerminar.getScene().getWindow();
         stage.setScene(newScene);
+        stage.setMaximized(true);
     }
 
     @FXML

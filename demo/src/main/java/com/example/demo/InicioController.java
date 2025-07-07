@@ -63,7 +63,17 @@ public class InicioController {
         // Configurar controles de SWAP
         configurarControlesSwap();
         actualizarEstilosAlgoritmos();
-        mostrarAviso("Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos.", "#2c3e50");
+
+        // CONFIGURAR EL COLOR DEL LABEL PARA MEJOR VISIBILIDAD
+        configurarEstiloLabel();
+
+        mostrarAviso("Sistema iniciado. Configura SWAP, selecciona algoritmo y agrega procesos.", "#10b981");
+    }
+
+    private void configurarEstiloLabel() {
+        if (lblEstado != null) {
+            lblEstado.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: 'Consolas Bold';");
+        }
     }
 
     private void configurarControlesSwap() {
