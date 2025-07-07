@@ -175,13 +175,23 @@ public class InicioController {
 
     private void agregarPrograma(String nombrePrograma, int duracion, int tiempoLlegada, int tamanioPrograma) {
         if (tamanioPrograma <= TAMAÑO_MAXIMO_PROCESO) {
+            // Programa pequeño - NO se divide pero SÍ conserva el nombre
+            System.out.println("📄 Programa pequeño: " + nombrePrograma + " (" + tamanioPrograma + " slots) - No se divide");
+
             Proceso programa = new Proceso(duracion, tiempoLlegada, tamanioPrograma);
+
+            // IMPORTANTE: Asignar el nombre personalizado después de crear el proceso
+            programa.setNombrePersonalizado(nombrePrograma); // Usando el setter que agregamos antes
+
             controlador.agregarProcesoAlSistema(programa);
+
         } else {
+            // Programa grande - SÍ se divide automáticamente
+            System.out.println("📦 Programa grande: " + nombrePrograma + " (" + tamanioPrograma + " slots) - Se divide automáticamente");
+
             Proceso programaPadre = new Proceso(nombrePrograma, duracion, tiempoLlegada, tamanioPrograma);
             List<Proceso> procesosHijos = programaPadre.dividirPrograma(TAMAÑO_MAXIMO_PROCESO);
 
-            controlador.agregarProcesoAlSistema(programaPadre);
 
             for (Proceso procesoHijo : procesosHijos) {
                 controlador.agregarProcesoAlSistema(procesoHijo);

@@ -20,6 +20,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import java.util.stream.Collectors;
+import javafx.scene.control.TextField;
 
 import java.io.IOException;
 import java.util.*;
@@ -60,6 +61,12 @@ public class HelloController extends Thread {
     @FXML private TableColumn<SwapInfo, String> columnaProcesoSwap;
     @FXML private TableColumn<SwapInfo, String> columnaDireccionesSwap;
 
+    @FXML private TextField txtNombreRuntime;
+    @FXML private TextField txtLlegadaRuntime;
+    @FXML private TextField txtDuracionRuntime;
+    @FXML private TextField txtTamanoRuntime;
+    @FXML private Button btnAgregarRuntime;
+
     private ObservableList<CoreInfo> listaNucleos;
     private ObservableList<MemoriaInfo> listaMemoria;
     private ObservableList<ProcesoInfo> listaProcesos;
@@ -69,6 +76,8 @@ public class HelloController extends Thread {
     private Controlador controlador;
     private boolean pausado = false;
     private int velocidadSimulacion = 1000;
+
+    private static final int TAMAÑO_MAXIMO_PROCESO = 100;
 
     public HelloController() {
         instance = this;
@@ -119,6 +128,174 @@ public class HelloController extends Thread {
     @FXML
     void cambiarVelocidadX5(ActionEvent event) {
         cambiarVelocidad(200, btnVelocidadX5);
+    }
+
+
+    @FXML
+    void agregarProcesoEnTiempoReal(ActionEvent event) {
+        try {
+            System.out.println("🔵 INICIO - agregarProcesoEnTiempoReal llamado");
+
+            // Validar campos obligatorios
+            if (txtDuracionRuntime.getText().trim().isEmpty() ||
+                    txtTamanoRuntime.getText().trim().isEmpty()) {
+                mostrarMensajeError("Los campos Duración y Tamaño son obligatorios");
+                return;
+            }
+
+            // Obtener valores
+            String nombre = txtNombreRuntime.getText().trim();
+            int duracion = Integer.parseInt(txtDuracionRuntime.getText().trim());
+            int tamanioSlot = Integer.parseInt(txtTamanoRuntime.getText().trim());
+
+            System.out.println("📝 Valores obtenidos - Nombre: '" + nombre + "', Duración: " + duracion + ", Tamaño: " + tamanioSlot);
+
+            // Calcular tiempo de llegada
+            int tiempoLlegada;
+            if (txtLlegadaRuntime.getText().trim().isEmpty()) {
+                // Si no especifica tiempo, usar tiempo actual (INMEDIATO)
+                tiempoLlegada = controlador.getTiempoActual();
+                System.out.println("⏰ Tiempo de llegada INMEDIATO: " + tiempoLlegada);
+            } else {
+                int unidadesEspera = Integer.parseInt(txtLlegadaRuntime.getText().trim());
+                tiempoLlegada = controlador.getTiempoActual() + Math.max(0, unidadesEspera);
+                System.out.println("⏰ Tiempo de llegada calculado: " + tiempoLlegada + " (actual: " + controlador.getTiempoActual() + " + " + unidadesEspera + ")");
+            }
+
+            // Validaciones básicas
+            if (duracion <= 0 || tamanioSlot <= 0) {
+                mostrarMensajeError("Duración y Tamaño deben ser positivos");
+                return;
+            }
+
+            if (duracion > 50) {
+                mostrarMensajeError("La duración máxima permitida es 50 unidades");
+                return;
+            }
+
+            // NUEVA LÓGICA: Determinar si es programa que necesita división (IGUAL QUE EN INICIO)
+            if (!nombre.isEmpty() && tamanioSlot > TAMAÑO_MAXIMO_PROCESO) {
+                // PROGRAMA GRANDE - División automática obligatoria
+                System.out.println("📦 Programa grande detectado: " + nombre + " (" + tamanioSlot + " slots)");
+                System.out.println("🔄 Dividiendo automáticamente en procesos más pequeños...");
+
+                // Crear programa padre (SOLO para dividir, NO se agrega al sistema)
+                Proceso programaPadre = new Proceso(nombre, duracion, tiempoLlegada, tamanioSlot);
+
+                // Dividir en procesos hijos
+                List<Proceso> procesosHijos = programaPadre.dividirPrograma(TAMAÑO_MAXIMO_PROCESO);
+
+                if (controlador != null) {
+                    // IMPORTANTE: NO agregar el programa padre, solo los hijos
+                    // controlador.agregarProcesoAlSistema(programaPadre); // ← ELIMINAR ESTA LÍNEA
+
+                    // Agregar SOLO los procesos hijos
+                    for (Proceso hijo : procesosHijos) {
+                        controlador.agregarProcesoAlSistema(hijo);
+                    }
+
+                    System.out.println("✅ Programa '" + nombre + "' dividido en " + procesosHijos.size() + " procesos (solo hijos agregados)");
+                }
+
+            } else if (!nombre.isEmpty()) {
+                // PROGRAMA PEQUEÑO - No necesita división pero conserva nombre
+                System.out.println("📄 Programa pequeño: " + nombre + " (" + tamanioSlot + " slots)");
+
+                Proceso nuevoProceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+                nuevoProceso.setNombrePersonalizado(nombre);
+
+                if (controlador != null) {
+                    controlador.agregarProcesoAlSistema(nuevoProceso);
+                }
+
+            } else {
+                // PROCESO ANÓNIMO - Comportamiento normal
+                System.out.println("🔹 Proceso anónimo: " + tamanioSlot + " slots");
+
+                Proceso nuevoProceso = new Proceso(duracion, tiempoLlegada, tamanioSlot);
+
+                if (controlador != null) {
+                    controlador.agregarProcesoAlSistema(nuevoProceso);
+                }
+            }
+
+            // Verificar que el controlador esté disponible
+            if (controlador != null) {
+                System.out.println("🎮 Controlador disponible. Estado running: " + controlador.getRunnin());
+
+                // Limpiar los campos
+                Platform.runLater(() -> {
+                    txtNombreRuntime.clear();
+                    txtLlegadaRuntime.clear();
+                    txtDuracionRuntime.clear();
+                    txtTamanoRuntime.clear();
+                });
+
+                // Mostrar confirmación
+                String tipoMsg = !nombre.isEmpty() ? "Programa/Proceso '" + nombre + "'" : "Proceso";
+                System.out.println("✅ " + tipoMsg + " agregado en tiempo real (D:" + duracion + ", L:" + tiempoLlegada + ", T:" + tamanioSlot + ")");
+
+                // Feedback visual positivo
+                Platform.runLater(() -> {
+                    btnAgregarRuntime.setStyle("-fx-background-color: linear-gradient(to right, #27ae60, #2ecc71); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10;");
+                    btnAgregarRuntime.setText("✅ AGREGADO");
+
+                    // Restaurar estado original después de 1.5 segundos
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(1500);
+                            Platform.runLater(() -> {
+                                btnAgregarRuntime.setStyle("-fx-background-color: linear-gradient(to right, #f59e0b, #d97706); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10;");
+                                btnAgregarRuntime.setText("➕ AGREGAR PROCESO");
+                            });
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }).start();
+                });
+
+                // Forzar actualización inmediata de la interfaz
+                Platform.runLater(() -> {
+                    actualizarColaDeprocesos();
+                    System.out.println("🔄 Interfaz actualizada manualmente");
+                });
+
+            } else {
+                mostrarMensajeError("Error: Controlador no está disponible");
+                System.err.println("❌ Controlador es null");
+            }
+
+        } catch (NumberFormatException e) {
+            mostrarMensajeError("Por favor, introduce solo números válidos en los campos numéricos");
+            System.err.println("❌ Error de formato numérico: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarMensajeError("Error inesperado: " + e.getMessage());
+            System.err.println("❌ Error inesperado: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void mostrarMensajeError(String mensaje) {
+        System.err.println("❌ Error al agregar proceso: " + mensaje);
+
+        Platform.runLater(() -> {
+            // Cambiar el botón a color rojo temporalmente
+            btnAgregarRuntime.setStyle("-fx-background-color: linear-gradient(to right, #dc2626, #b91c1c); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10;");
+            btnAgregarRuntime.setText("❌ ERROR");
+
+            // Restaurar después de 2 segundos
+            new Thread(() -> {
+                try {
+                    Thread.sleep(2000);
+                    Platform.runLater(() -> {
+                        btnAgregarRuntime.setStyle("-fx-background-color: linear-gradient(to right, #f59e0b, #d97706); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10;");
+                        btnAgregarRuntime.setText("➕ AGREGAR PROCESO");
+                    });
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
+        });
     }
 
     @FXML

@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -14,10 +15,10 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="800.0" prefWidth="1536.0" spacing="20.0" style="-fx-background-color: linear-gradient(to bottom right, #111827, #1f2937, #000000); -fx-padding: 25;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.HelloController">
+<VBox prefHeight="800.0" prefWidth="1536.0" spacing="15.0" style="-fx-background-color: linear-gradient(to bottom right, #111827, #1f2937, #000000); -fx-padding: 25;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.HelloController">
    <children>
       <!-- Header -->
-      <VBox alignment="CENTER" prefHeight="80.0" spacing="10.0">
+      <VBox alignment="CENTER" prefHeight="70.0" spacing="8.0">
          <children>
             <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="SIMULADOR DE PROCESOS - EN EJECUCIÓN" textAlignment="CENTER">
                <font>
@@ -32,19 +33,19 @@
          </children>
       </VBox>
 
-      <!-- Main Content Grid -->
-      <GridPane hgap="20.0" prefHeight="750.0" prefWidth="1230.0" vgap="20.0">
+      <!-- Main Content Grid - EXPANDIDO PARA USAR MÁS ESPACIO -->
+      <GridPane hgap="20.0" prefHeight="650.0" prefWidth="1230.0" vgap="20.0" VBox.vgrow="ALWAYS">
          <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="33.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="34.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="33.0" />
          </columnConstraints>
          <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="65.0" vgrow="ALWAYS" />
+            <RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="ALWAYS" />
          </rowConstraints>
          <children>
-            <!-- COLUMNA IZQUIERDA: NÚCLEOS -->
+            <!-- FILA SUPERIOR IZQUIERDA: NÚCLEOS -->
             <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="0" GridPane.rowIndex="0">
                <children>
                   <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="NÚCLEOS DEL PROCESADOR">
@@ -53,7 +54,7 @@
                      </font>
                   </Text>
 
-                  <TableView fx:id="tablaNucleos" prefHeight="320.0" prefWidth="350.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;">
+                  <TableView fx:id="tablaNucleos" prefHeight="400.0" prefWidth="350.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;" VBox.vgrow="ALWAYS">
                      <columns>
                         <TableColumn fx:id="columnaCoreId" prefWidth="103.99998712539673" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Core" />
                         <TableColumn fx:id="columnaProceso" prefWidth="216.0000228881836" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Proceso" />
@@ -63,8 +64,8 @@
                </children>
             </VBox>
 
-            <!-- COLUMNA CENTRAL: MEMORIA RAM (EXPANDIDA) -->
-            <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.rowSpan="2">
+            <!-- FILA SUPERIOR CENTRAL: MEMORIA RAM -->
+            <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="1" GridPane.rowIndex="0">
                <children>
                   <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="MEMORIA RAM">
                      <font>
@@ -72,7 +73,7 @@
                      </font>
                   </Text>
 
-                  <TableView fx:id="tablaMemoriaRAM" prefHeight="680.0" prefWidth="400.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;">
+                  <TableView fx:id="tablaMemoriaRAM" prefHeight="400.0" prefWidth="400.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;" VBox.vgrow="ALWAYS">
                      <columns>
                         <TableColumn fx:id="columnaDireccion" prefWidth="64.00000047683716" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Dirección" />
                         <TableColumn fx:id="columnaProcesoId" prefWidth="139.199951171875" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Proceso ID" />
@@ -83,7 +84,7 @@
                </children>
             </VBox>
 
-            <!-- COLUMNA DERECHA: PROCESOS EN COLA -->
+            <!-- FILA SUPERIOR DERECHA: PROCESOS EN COLA -->
             <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="2" GridPane.rowIndex="0">
                <children>
                   <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="PROCESOS EN COLA">
@@ -92,7 +93,7 @@
                      </font>
                   </Text>
 
-                  <TableView fx:id="tablaProcesos" prefHeight="320.0" prefWidth="350.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;">
+                  <TableView fx:id="tablaProcesos" prefHeight="400.0" prefWidth="350.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;" VBox.vgrow="ALWAYS">
                      <columns>
                         <TableColumn fx:id="columnaProcesoInfo" prefWidth="240.79993295669556" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Procesos en Cola" />
                         <TableColumn fx:id="columnaEstadoProceso" prefWidth="118.400146484375" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Estado" />
@@ -102,7 +103,7 @@
                </children>
             </VBox>
 
-            <!-- FILA INFERIOR: DISCO DURO -->
+            <!-- FILA INFERIOR IZQUIERDA: DISCO DURO -->
             <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="0" GridPane.rowIndex="1">
                <children>
                   <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="DISCO DURO (SWAP)">
@@ -111,7 +112,7 @@
                      </font>
                   </Text>
 
-                  <TableView fx:id="tablaSwap" prefHeight="200.0" prefWidth="350.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;">
+                  <TableView fx:id="tablaSwap" prefHeight="240.0" prefWidth="350.0" style="-fx-background-color: #374151; -fx-border-color: #4b5563; -fx-border-radius: 8; -fx-border-width: 1; -fx-text-fill: white;" VBox.vgrow="ALWAYS">
                      <columns>
                         <TableColumn fx:id="columnaProcesoSwap" prefWidth="199.99999475479126" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Proceso" />
                         <TableColumn fx:id="columnaDireccionesSwap" prefWidth="234.3999786376953" style="-fx-background-color: #4b5563; -fx-text-fill: white;" text="Direcciones" />
@@ -120,38 +121,151 @@
                </children>
             </VBox>
 
-            <!-- FILA INFERIOR: VELOCIDAD Y CONTROLES COMBINADOS - AJUSTADO -->
-            <VBox maxHeight="360.0" prefHeight="158.0" prefWidth="482.0" spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 15;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            <!-- FILA INFERIOR CENTRO: AGREGAR PROCESOS -->
+            <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #f59e0b; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
-                  <!-- Sección Velocidad -->
-                  <VBox alignment="CENTER" spacing="15.0">
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
                      <children>
-                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="VELOCIDAD SIMULACIÓN" textAlignment="CENTER">
+                        <Text fill="#f59e0b" strokeType="OUTSIDE" strokeWidth="0.0">
                            <font>
-                              <Font name="Consolas Bold" size="16.0" />
+                              <Font size="20.0" />
                            </font>
                         </Text>
+                        <Text fill="#f59e0b" strokeType="OUTSIDE" strokeWidth="0.0" text="AGREGAR PROCESOS">
+                           <font>
+                              <Font name="Consolas Bold" size="18.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </HBox>
+
+                  <!-- Formulario para agregar procesos -->
+                  <VBox spacing="12.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <!-- Primera fila de campos -->
+                        <HBox spacing="10.0">
+                           <children>
+                              <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="📝 Nombre:">
+                                       <font>
+                                          <Font name="Consolas Bold" size="11.0" />
+                                       </font>
+                                    </Text>
+                                    <TextField fx:id="txtNombreRuntime" prefHeight="32.0" promptText="Opcional" style="-fx-background-color: #374151; -fx-border-color: #f59e0b; -fx-border-radius: 6; -fx-text-fill: white; -fx-font-size: 11; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #f59e0b;" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="⏰ Llegada:">
+                                       <font>
+                                          <Font name="Consolas Bold" size="11.0" />
+                                       </font>
+                                    </Text>
+                                    <TextField fx:id="txtLlegadaRuntime" prefHeight="32.0" promptText="Unidades" style="-fx-background-color: #374151; -fx-border-color: #f59e0b; -fx-border-radius: 6; -fx-text-fill: white; -fx-font-size: 11; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #f59e0b;" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+
+                        <!-- Segunda fila de campos -->
+                        <HBox spacing="10.0">
+                           <children>
+                              <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="⏱ Duración:">
+                                       <font>
+                                          <Font name="Consolas Bold" size="11.0" />
+                                       </font>
+                                    </Text>
+                                    <TextField fx:id="txtDuracionRuntime" prefHeight="32.0" promptText="ej: 5" style="-fx-background-color: #374151; -fx-border-color: #f59e0b; -fx-border-radius: 6; -fx-text-fill: white; -fx-font-size: 11; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #f59e0b;" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Text fill="#d1d5db" strokeType="OUTSIDE" strokeWidth="0.0" text="📦 Tamaño:">
+                                       <font>
+                                          <Font name="Consolas Bold" size="11.0" />
+                                       </font>
+                                    </Text>
+                                    <TextField fx:id="txtTamanoRuntime" prefHeight="32.0" promptText="ej: 50" style="-fx-background-color: #374151; -fx-border-color: #f59e0b; -fx-border-radius: 6; -fx-text-fill: white; -fx-font-size: 11; -fx-prompt-text-fill: #9ca3af; -fx-focus-color: #f59e0b;" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+
+                        <!-- Panel informativo -->
+                        <VBox spacing="5.0" style="-fx-background-color: #064e3b; -fx-background-radius: 6; -fx-padding: 8; -fx-border-color: #f59e0b; -fx-border-radius: 6; -fx-border-width: 1;">
+                           <children>
+                              <Text fill="#f59e0b" strokeType="OUTSIDE" strokeWidth="0.0" text="ℹ️ Información:">
+                                 <font>
+                                    <Font name="Consolas Bold" size="10.0" />
+                                 </font>
+                              </Text>
+                              <Text fill="#d1fae5" strokeType="OUTSIDE" strokeWidth="0.0" text="• Llegada: en cuántas unidades llegará (0 = inmediato)" wrappingWidth="300.0">
+                                 <font>
+                                    <Font name="Consolas" size="9.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                        </VBox>
+
+                        <!-- Botón principal -->
+                        <VBox alignment="CENTER" spacing="5.0">
+                           <children>
+                              <Button fx:id="btnAgregarRuntime" mnemonicParsing="false" onAction="#agregarProcesoEnTiempoReal" prefHeight="38.0" prefWidth="260.0" style="-fx-background-color: linear-gradient(to right, #f59e0b, #d97706); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.4), 6, 0, 0, 2);" text="➕ AGREGAR PROCESO">
+                                 <font>
+                                    <Font name="Consolas Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+
+            <!-- FILA INFERIOR DERECHA: VELOCIDAD Y CONTROLES -->
+            <VBox spacing="15.0" style="-fx-background-color: #1f2937; -fx-background-radius: 15; -fx-border-color: #10b981; -fx-border-radius: 15; -fx-border-width: 2; -fx-padding: 20;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+               <children>
+                  <!-- Sección Velocidad -->
+                  <VBox alignment="CENTER" spacing="12.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="8.0">
+                           <children>
+                              <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Text>
+                              <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="VELOCIDAD SIMULACIÓN" textAlignment="CENTER">
+                                 <font>
+                                    <Font name="Consolas Bold" size="14.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                        </HBox>
 
                         <HBox alignment="CENTER" spacing="10.0">
                            <children>
-                              <Button fx:id="btnVelocidadX1" onAction="#cambiarVelocidadX1" prefHeight="35.0" prefWidth="55.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-min-width: 55px; -fx-max-width: 55px; -fx-min-height: 35px; -fx-max-height: 35px; -fx-font-size: 12px;" text="x1">
+                              <Button fx:id="btnVelocidadX1" onAction="#cambiarVelocidadX1" prefHeight="32.0" prefWidth="50.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 11px;" text="x1">
                                  <font>
-                                    <Font name="Consolas Bold" size="12.0" />
+                                    <Font name="Consolas Bold" size="11.0" />
                                  </font>
                               </Button>
-                              <Button fx:id="btnVelocidadX2" onAction="#cambiarVelocidadX2" prefHeight="35.0" prefWidth="55.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-min-width: 55px; -fx-max-width: 55px; -fx-min-height: 35px; -fx-max-height: 35px; -fx-font-size: 12px;" text="x2">
+                              <Button fx:id="btnVelocidadX2" onAction="#cambiarVelocidadX2" prefHeight="32.0" prefWidth="50.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 11px;" text="x2">
                                  <font>
-                                    <Font name="Consolas Bold" size="12.0" />
+                                    <Font name="Consolas Bold" size="11.0" />
                                  </font>
                               </Button>
-                              <Button fx:id="btnVelocidadX5" onAction="#cambiarVelocidadX5" prefHeight="35.0" prefWidth="55.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-min-width: 55px; -fx-max-width: 55px; -fx-min-height: 35px; -fx-max-height: 35px; -fx-font-size: 12px;" text="x5">
+                              <Button fx:id="btnVelocidadX5" onAction="#cambiarVelocidadX5" prefHeight="32.0" prefWidth="50.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 11px;" text="x5">
                                  <font>
-                                    <Font name="Consolas Bold" size="12.0" />
+                                    <Font name="Consolas Bold" size="11.0" />
                                  </font>
                               </Button>
-                              <Button fx:id="btnVelocidadX10" onAction="#cambiarVelocidadX10" prefHeight="35.0" prefWidth="55.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-min-width: 55px; -fx-max-width: 55px; -fx-min-height: 35px; -fx-max-height: 35px; -fx-font-size: 12px;" text="x10">
+                              <Button fx:id="btnVelocidadX10" onAction="#cambiarVelocidadX10" prefHeight="32.0" prefWidth="50.0" style="-fx-background-color: #374151; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 8; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 11px;" text="x10">
                                  <font>
-                                    <Font name="Consolas Bold" size="12.0" />
+                                    <Font name="Consolas Bold" size="11.0" />
                                  </font>
                               </Button>
                            </children>
@@ -160,50 +274,60 @@
                   </VBox>
 
                   <!-- Sección Controles -->
-                  <VBox alignment="CENTER" spacing="15.0">
+                  <VBox alignment="CENTER" spacing="12.0" VBox.vgrow="ALWAYS">
                      <children>
-                        <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="CONTROLES" textAlignment="CENTER">
-                           <font>
-                              <Font name="Consolas Bold" size="16.0" />
-                           </font>
-                        </Text>
+                        <HBox alignment="CENTER_LEFT" spacing="8.0">
+                           <children>
+                              <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Text>
+                              <Text fill="#10b981" strokeType="OUTSIDE" strokeWidth="0.0" text="CONTROLES" textAlignment="CENTER">
+                                 <font>
+                                    <Font name="Consolas Bold" size="14.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                        </HBox>
+
+                        <VBox alignment="CENTER" spacing="10.0">
+                           <children>
+                              <Button fx:id="botonPausar" onAction="#ActionPausarSimulacion" prefHeight="38.0" prefWidth="220.0" style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="⏸ PAUSAR SIMULACIÓN">
+                                 <font>
+                                    <Font name="Consolas Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="botonTerminar" onAction="#ActionInButtonTerminar" prefHeight="38.0" prefWidth="220.0" style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="⏹ TERMINAR SIMULACIÓN">
+                                 <font>
+                                    <Font name="Consolas Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                           </children>
+                        </VBox>
                      </children>
                   </VBox>
-
-                        <VBox alignment="CENTER" spacing="12.0">
-                     <children>
-                        <Button fx:id="botonPausar" onAction="#ActionPausarSimulacion" prefHeight="40.0" prefWidth="240.0" style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-min-width: 240px; -fx-max-width: 240px; -fx-min-height: 40px; -fx-max-height: 40px; -fx-font-size: 13px;" text="⏸ PAUSAR SIMULACIÓN">
-                           <font>
-                              <Font name="Consolas Bold" size="13.0" />
-                           </font>
-                        </Button>
-                        <Button fx:id="botonTerminar" onAction="#ActionInButtonTerminar" prefHeight="40.0" prefWidth="240.0" style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-min-width: 240px; -fx-max-width: 240px; -fx-min-height: 40px; -fx-max-height: 40px; -fx-font-size: 13px;" text="⏹ TERMINAR SIMULACIÓN">
-                           <font>
-                              <Font name="Consolas Bold" size="13.0" />
-                           </font>
-                        </Button>
-                     </children>
-                  </VBox>
-
-                  <!-- Sección QUANTUM (solo se muestra para Round Robin) -->
-                  <AnchorPane fx:id="panelQuantum" prefHeight="60.0" style="-fx-background-color: #064e3b; -fx-background-radius: 8; -fx-border-color: #10b981; -fx-border-radius: 8; -fx-border-width: 1;" visible="false">
-                     <children>
-                        <Text fill="#10b981" layoutX="15.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="QUANTUM ACTUAL">
-                           <font>
-                              <Font name="Consolas Bold" size="14.0" />
-                           </font>
-                        </Text>
-                        <Label fx:id="labelQuantumValor" layoutX="15.0" layoutY="40.0" text="Valor: 0" textFill="#10b981">
-                           <font>
-                              <Font name="Consolas Bold" size="12.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </AnchorPane>
                </children>
             </VBox>
+
          </children>
       </GridPane>
+
+      <!-- Panel Quantum - FUERA DEL GRIDPANE -->
+      <AnchorPane fx:id="panelQuantum" prefHeight="50.0" style="-fx-background-color: #064e3b; -fx-background-radius: 8; -fx-border-color: #10b981; -fx-border-radius: 8; -fx-border-width: 1;" visible="false">
+         <children>
+            <Text fill="#10b981" layoutX="15.0" layoutY="18.0" strokeType="OUTSIDE" strokeWidth="0.0" text="QUANTUM ACTUAL">
+               <font>
+                  <Font name="Consolas Bold" size="12.0" />
+               </font>
+            </Text>
+            <Label fx:id="labelQuantumValor" layoutX="15.0" layoutY="35.0" text="Valor: 0" textFill="#10b981">
+               <font>
+                  <Font name="Consolas Bold" size="11.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
    </children>
    <padding>
       <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />

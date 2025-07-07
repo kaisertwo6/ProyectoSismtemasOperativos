@@ -17,6 +17,7 @@ public class VerProcesoController {
     @FXML private Text labelTamaño;
     @FXML private Text labelProcesoPadre;  // NUEVO
     @FXML private Text labelProcesosHijos; // NUEVO
+    @FXML private Text labelTipoProceso;
 
     private Proceso procesoActual;
 
@@ -31,39 +32,19 @@ public class VerProcesoController {
         if (proceso != null) {
             // Actualizar título
             String titulo = proceso.getId();
-            if (proceso.esProcesoHijo()) {
-                titulo += " (PROCESO HIJO)";
-            } else if (proceso.esProcesoConHijos()) {
-                titulo += " (PROCESO PADRE)";
-            }
             labelTitulo.setText(titulo);
 
-            // Actualizar información del proceso
+            // Actualizar información básica del proceso
             labelLlegada.setText(String.valueOf(proceso.getTiempoDeLlegada()));
-            labelEjecucion.setText(String.valueOf(proceso.getDuracion()));
+            labelEjecucion.setText(String.valueOf(proceso.getDuracionOriginal()) + " unidades");
             labelEspera.setText(String.valueOf(proceso.getTiempoDeEspera()));
             labelRetorno.setText(String.valueOf(proceso.getTiempoDeRetorno()));
-            labelTamaño.setText(String.valueOf(proceso.getTamanioSlot()));
-            
-            // NUEVA INFORMACIÓN: Proceso padre
-            if (proceso.esProcesoHijo() && proceso.getProcesoPadre() != null) {
-                labelProcesoPadre.setText(proceso.getProcesoPadre().getId());
-            } else {
-                labelProcesoPadre.setText("Ninguno (Proceso raíz)");
-            }
-            
-            // NUEVA INFORMACIÓN: Procesos hijos
-            if (proceso.esProcesoConHijos()) {
-                StringBuilder hijosInfo = new StringBuilder();
-                for (int i = 0; i < proceso.getProcesosHijos().size(); i++) {
-                    if (i > 0) hijosInfo.append(", ");
-                    hijosInfo.append(proceso.getProcesosHijos().get(i).getId());
-                }
-                labelProcesosHijos.setText(hijosInfo.toString() + " (" + proceso.cantidadHijos() + " hijos)");
-            } else {
-                labelProcesosHijos.setText("Ninguno");
-            }
-            
+            labelTamaño.setText(String.valueOf(proceso.getTamanioSlot()) + " slots");
+
+            // NUEVA LÓGICA SIMPLIFICADA: Determinar tipo de proceso
+            String tipoProceso = determinarTipoProceso(proceso);
+            labelTipoProceso.setText(tipoProceso);
+
         } else {
             // Valores por defecto si el proceso es nulo
             labelTitulo.setText("Proceso Desconocido");
@@ -72,8 +53,44 @@ public class VerProcesoController {
             labelEspera.setText("N/A");
             labelRetorno.setText("N/A");
             labelTamaño.setText("N/A");
-            labelProcesoPadre.setText("N/A");
-            labelProcesosHijos.setText("N/A");
+            labelTipoProceso.setText("N/A");
+        }
+    }
+
+    private String determinarTipoProceso(Proceso proceso) {
+        String id = proceso.getId();
+
+        // Verificar si es parte de un programa dividido (contiene .P)
+        if (id.contains(".P") && !id.contains(".H")) {
+            // Es parte de un programa grande dividido
+            String nombrePrograma = id.substring(0, id.indexOf(".P"));
+            String numeroParte = id.substring(id.indexOf(".P") + 2);
+            return "📦 Parte del programa: " + nombrePrograma + "\n" +
+                    "🔢 Fragmento número: " + numeroParte + "\n" +
+                    "⚡ Programa dividido automáticamente por tamaño";
+        }
+
+        // Verificar si es un proceso hijo creado por fork (contiene .H)
+        else if (id.contains(".H")) {
+            String procesoPadre = id.substring(0, id.indexOf(".H"));
+            String numeroHijo = id.substring(id.indexOf(".H") + 2);
+            return "👶 Proceso hijo creado durante ejecución\n" +
+                    "👨‍💼 Proceso padre: " + procesoPadre + "\n" +
+                    "🔢 Hijo número: " + numeroHijo;
+        }
+
+        // Verificar si tiene nombre personalizado (no es "Proceso X")
+        else if (!id.startsWith("Proceso ")) {
+            return "📄 Programa completo: " + id + "\n" +
+                    "✨ Programa pequeño que no requirió división\n" +
+                    "💾 Tamaño: " + proceso.getTamanioSlot() + " slots";
+        }
+
+        // Es un proceso normal sin nombre
+        else {
+            return "⚙️ Proceso independiente\n" +
+                    "🔧 Creado sin nombre específico\n" +
+                    "💾 Tamaño: " + proceso.getTamanioSlot() + " slots";
         }
     }
 

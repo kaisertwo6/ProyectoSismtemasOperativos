@@ -18,7 +18,9 @@ public class Proceso {
     private final IntegerProperty tiempoDeEspera;
     private final IntegerProperty tiempoDeRetorno;
     private final IntegerProperty tamanioSlot;
+    private final IntegerProperty duracionOriginal;
     private EstadoProceso estado;
+
 
     private IntegerProperty tiempoCpuAcumulado;
     private int ultimaEntradaColaListos;
@@ -31,10 +33,14 @@ public class Proceso {
     private String nombrePrograma; // Nombre del programa original
     private int tamanioOriginalPrograma; // Tamaño total del programa
 
+
+
+
     // Constructor para procesos normales
     public Proceso(int duracion, int tiempoDeLlegada, int tamanioSlot) {
         this.id = new SimpleStringProperty("Proceso " + nextId++);
         this.duracion = new SimpleIntegerProperty(duracion);
+        this.duracionOriginal = new SimpleIntegerProperty(duracion);
         this.tiempoDeLlegada = new SimpleIntegerProperty(tiempoDeLlegada);
         this.tamanioSlot = new SimpleIntegerProperty(tamanioSlot);
         this.tiempoDeEspera = new SimpleIntegerProperty(0);
@@ -49,12 +55,14 @@ public class Proceso {
         this.esPrograma = false;
         this.nombrePrograma = null;
         this.tamanioOriginalPrograma = tamanioSlot;
+
     }
 
     // Constructor para programas que se dividen automáticamente
     public Proceso(String nombrePrograma, int duracion, int tiempoDeLlegada, int tamanioPrograma) {
         this.id = new SimpleStringProperty(nombrePrograma);
         this.duracion = new SimpleIntegerProperty(duracion);
+        this.duracionOriginal = new SimpleIntegerProperty(duracion);
         this.tiempoDeLlegada = new SimpleIntegerProperty(tiempoDeLlegada);
         this.tamanioSlot = new SimpleIntegerProperty(tamanioPrograma);
         this.tiempoDeEspera = new SimpleIntegerProperty(0);
@@ -74,6 +82,7 @@ public class Proceso {
     // Constructor para procesos hijos (división automática)
     private Proceso(String nombrePrograma, int duracion, int tiempoDeLlegada, int tamanioSlot, Proceso procesoPadre, int numeroHijo) {
         this.duracion = new SimpleIntegerProperty(duracion);
+        this.duracionOriginal = new SimpleIntegerProperty(duracion);
         this.tiempoDeLlegada = new SimpleIntegerProperty(tiempoDeLlegada);
         this.tamanioSlot = new SimpleIntegerProperty(tamanioSlot);
         this.tiempoDeEspera = new SimpleIntegerProperty(0);
@@ -198,6 +207,24 @@ public class Proceso {
     public void setUltimaEntradaColaListos(int ultimaEntradaColaListos) { this.ultimaEntradaColaListos = ultimaEntradaColaListos; }
     public void incrementarTiempoCpuAcumulado() { this.tiempoCpuAcumulado.set(this.tiempoCpuAcumulado.get() + 1); }
     public void habilitarCreacionHijos() { this.tieneHijos = true; }
+
+    public void setId(String nuevoId) {
+        this.id.set(nuevoId);
+    }
+
+    public void setNombrePersonalizado(String nombrePersonalizado) {
+        if (nombrePersonalizado != null && !nombrePersonalizado.trim().isEmpty()) {
+            this.id.set(nombrePersonalizado.trim());
+        }
+    }
+
+    public int getDuracionOriginal() {
+        return duracionOriginal.get();
+    }
+
+    public IntegerProperty duracionOriginalProperty() {
+        return duracionOriginal;
+    }
 
     public static void resetNextId() { nextId = 1; }
 }
